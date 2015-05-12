@@ -51,6 +51,10 @@ static void parseProgramArguments(int argc,char* argv[]){
 	}
 }
 
+static void selectVictim(vector<Host>& avaiableHosts){
+	// TODO
+}
+
 int main(int argc, char* argv[]){
 
 	if(argc < 0){
@@ -59,7 +63,21 @@ int main(int argc, char* argv[]){
 	}
 	parseProgramArguments(argc, argv);
 
+	Sweeper sweeper;
+	vector<Host> avaiableHosts = sweeper.sweep();
+	Host& victim = selectVictim(avaiableHosts);
 
+	// TODO pegar IP e MAC do Gateway
+	Host gateway = Host::findGateway(iface);
+
+	Spoofer spoofer(gateway, victim);
+
+	Pipe gateway2victim(gateway, victim);
+	Pipe victim2gateway(victim, gateway);
+
+	while(true){
+		Renderer renderer();
+	}
 
 	return 0;
 }
