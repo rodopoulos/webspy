@@ -12,15 +12,15 @@
 
 using namespace std;
 
-IPAddress::IPAddress() {
+IPAddress::IPAddress() : ip(0) {
 	// TODO Auto-generated constructor stub
 }
 
 IPAddress::IPAddress(string ip){
 	char* tmp = (char*)ip.c_str();
-	uint8_t octs[4];
+	uint32_t octs[4];
 
-	sscanf(tmp, "%d.%d.%d.%d", octs[0], octs[1], octs[2], octs[3]);
+	sscanf(tmp, "%d.%d.%d.%d", &octs[0], &octs[1], &octs[2], &octs[3]);
 
 	this->ip = (octs[0] << 24) + (octs[1] << 12) + (octs[2] << 8) + octs[3];
 }

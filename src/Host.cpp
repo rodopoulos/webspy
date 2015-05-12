@@ -73,8 +73,8 @@ void setName(string name){
 
 void Host::toString(){
 	cout << "Host " << this->id
-		 << " -> IP: " << this->ip
-		 << " MAC: " << this->mac
+		 << " -> IP: " << this->ip.toString()
+		 << " MAC: " << this->mac.toString()
 		 << " with name " << this->name << "\n";
 }
 

@@ -18,9 +18,9 @@ private:
 	static int currentID;
 public:
 	int id;
-	std::string name;
 	IPAddress ip;
 	MACAddress mac;
+	std::string name;
 
 	// Constructors
 	Host();

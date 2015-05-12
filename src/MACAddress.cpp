@@ -11,22 +11,22 @@
 
 using namespace std;
 
-MACAddress::MACAddress() { }
+MACAddress::MACAddress() : mac(0) { }
 
 MACAddress::~MACAddress() { }
 
 MACAddress::MACAddress(std::string mac){
 	char* tmp = (char*)mac.c_str();
-	uint8_t octs[4];
+	uint32_t octs[6];
 
-	sscanf(tmp, "%x:%x:%x:%x:%x:%x", octs[0], octs[1], octs[2], octs[3], octs[4], octs[5]);
+	sscanf(tmp, "%x:%x:%x:%x:%x:%x", &octs[0], &octs[1], &octs[2], &octs[3], &octs[4], &octs[5]);
 
-	this->mac = (octs[0] << 40) +
-				(octs[1] << 32) +
-				(octs[2] << 24) +
-				(octs[3] << 16) +
-				(octs[4] << 8) +
-				octs[5];
+	this->mac = (uint64_t(octs[0]) << 40) +
+				(uint64_t(octs[0]) << 32) +
+				(uint64_t(octs[0]) << 24) +
+				(uint64_t(octs[0]) << 16) +
+				(uint64_t(octs[0]) << 8) +
+				uint64_t(octs[0]);
 }
 
 MACAddress::MACAddress(uint64_t mac) : mac(mac) {}
