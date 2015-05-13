@@ -22,7 +22,7 @@ Host::Host() {
 	currentID++;
 }
 
-Host::Host(uint32_t ip, uint64_t mac, string name) : ip(ip), mac(mac), name(name){
+Host::Host(uint32_t ip, libnet_ether_addr mac, string name) : ip(ip), mac(mac), name(name){
 	this->id = currentID;
 	currentID++;
 }

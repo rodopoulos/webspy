@@ -24,12 +24,12 @@ public:
 
 	// Constructors
 	Host();
-	Host(uint32_t ip, uint64_t mac, std::string name);
+	Host(uint32_t ip, libnet_ether_addr mac, std::string name);
 	virtual ~Host();
 
 	// Getters e Setters
 	void setIP(uint32_t ip);
-	void setMAC(uint64_t mac);
+	void setMAC(libnet_ether_addr mac);
 	void setName(std::string name);
 
 	// Main Methods

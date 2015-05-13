@@ -5,6 +5,8 @@
  *      Author: Felipe Rodopoulos
  */
 
+#include <iostream>
+
 // this
 #include "Sweeper.h"
 
@@ -12,3 +14,15 @@
 #include "WebSpyGlobals.h"
 
 using namespace std;
+
+Sweeper::Sweeper(){ }
+
+Sweeper::~Sweeper(){ }
+
+vector<Host> Sweeper::sweep(){
+	cout << "Initing net sweep..." << endl;
+
+	vector<Host> tmp;
+
+	return tmp;
+}

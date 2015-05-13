@@ -10,8 +10,9 @@
 
 bool WebSpyGlobals::verbose = false;
 bool WebSpyGlobals::logging = false;
-std::string WebSpyGlobals::browser;
-std::string WebSpyGlobals::interface;
-std::string WebSpyGlobals::myIP;
-std::string WebSpyGlobals::myMAC;
+char* WebSpyGlobals::browser = NULL;
+char* WebSpyGlobals::iface = NULL;
+char WebSpyGlobals::libnetErrBuffer[LIBNET_ERRBUF_SIZE];
+libnet_t* WebSpyGlobals::context;
+Host WebSpyGlobals::attacker;
 

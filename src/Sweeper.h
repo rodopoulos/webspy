@@ -11,17 +11,14 @@
 #include <string>
 #include <vector>
 #include "Host.h"
-/*
+
 class Sweeper {
-private:
-	static std::vector<Host*> *avaiableHosts;
 
 public:
 	Sweeper();
-	Sweeper(std::vector<Host*> *avaiableHosts);
 	virtual ~Sweeper();
-	void initSweep();
-	static char* formatSubnetMask();
+
+	std::vector<Host> sweep();
 };
-*/
+
 #endif /* SWEEPER_H_ */
