@@ -19,7 +19,7 @@ public:
 	IPAddress(uint32_t ip);
 	virtual ~IPAddress();
 
-	uint32_t getIPAddress();
+	uint32_t getIP();
 	void setIPAddress(std::string ip);
 	void setIPAddress(uint32_t ip);
 

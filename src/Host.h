@@ -10,6 +10,8 @@
 
 #include <string>
 #include <vector>
+#include <libnet.h>
+
 #include "IPAddress.h"
 #include "MACAddress.h"
 
@@ -24,13 +26,17 @@ public:
 
 	// Constructors
 	Host();
-	Host(uint32_t ip, libnet_ether_addr mac, std::string name);
+	Host(uint32_t ip, libnet_ether_addr* mac, std::string name);
 	virtual ~Host();
 
 	// Getters e Setters
 	void setIP(uint32_t ip);
-	void setMAC(libnet_ether_addr mac);
+	void setMAC(libnet_ether_addr* mac);
 	void setName(std::string name);
+
+	libnet_ether_addr* getMAC();
+	uint32_t getIP();
+	std::string getName();
 
 	// Main Methods
 	Host& selectVictim(std::vector<Host*>& avaiableHosts);

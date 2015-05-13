@@ -22,57 +22,37 @@ Host::Host() {
 	currentID++;
 }
 
-Host::Host(uint32_t ip, libnet_ether_addr mac, string name) : ip(ip), mac(mac), name(name){
+Host::Host(uint32_t ip, libnet_ether_addr* mac, string name) : ip(ip), mac(mac), name(name){
 	this->id = currentID;
 	currentID++;
 }
 
 Host::~Host() {}
 
-// Main Methods ------------------------------------------------------------------------
-
-Host& Host::selectVictim(vector<Host*>& avaiableHosts){
-	sortByIP(avaiableHosts);
-	printHostList(avaiableHosts);
-
-	int victimID;
-	cout << endl << "Select desired victim (ID, IP or MAC): " << endl;
-	cin >> victimID;
-
-	return *avaiableHosts[victimID];
-}
-
-void Host::sortByIP(vector<Host*>& hostList){
-
-}
-
-void Host::printHostList(vector<Host*>& hostList){
-	vector<Host*>::iterator it;
-	int count = 1;
-	for(it = hostList.begin(); it != hostList.end(); it++){
-		//cout << count << ". Host with IP " << it->IP << " and MAC " << it->MAC << endl;
-		count++;
-	}
-}
-
 // Getters e Setters --------------------------------------------------------------------
 
-void setIP(string IP){
-
+void setIP(uint32_t ip){
 }
 
-void setMAC(string MAC){
+void setMAC(libnet_ether_addr* mac){
 
 }
 
 void setName(string name){
+}
 
+libnet_ether_addr* Host::getMAC(){
+	return this->mac.getMACAddress();
+}
+
+uint32_t Host::getIP(){
+	return this->ip.getIP();
 }
 
 // Utils --------------------------------------------------------------------------------
 
 void Host::toString(){
-	cout << "Host " << this->id
+	cout << "Host "
 		 << " -> IP: " << this->ip.toString()
 		 << " MAC: " << this->mac.toString()
 		 << " with name " << this->name << "\n";

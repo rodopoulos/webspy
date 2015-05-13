@@ -5,22 +5,25 @@
  *      Author: Felipe Rodopoulos
  */
 
-// std
+// std-cpp
 #include <iostream>
 #include <vector>
-//local
-#include "WebSpyGlobals.h"
-#include "IPAddress.h"
+
+//std-c
+#include <stdio.h>
 #include <libnet.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <ifaddrs.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <linux/if_link.h>
-#include <pcap.h>
+
+//wepspy
+#include "WebSpyGlobals.h"
+#include "IPAddress.h"
+#include "Host.h"
 
 using namespace std;
 
@@ -126,13 +129,20 @@ int main(int argc, char* argv[]){
 		exit(EXIT_FAILURE);
 	}
 
-	//WebSpyGlobals::attacker.setIP(libnet_get_ipaddr4(WebSpyGlobals::context));
-	//WebSpyGlobals::attacker.setMAC(libnet_get_hwaddr(WebSpyGlobals::context));
+	printf("Inteface selected: %s\n", WebSpyGlobals::iface);
+	printf("Link type: %d\n", WebSpyGlobals::context->link_type);
 
-	/*Sweeper sweeper;
-	vector<Host> avaiableHosts = sweeper.sweep();
-	Host& victim = selectVictim(avaiableHosts);
+	WebSpyGlobals::attacker(libnet_get_ipaddr4(WebSpyGlobals::context),
+				  libnet_get_hwaddr(WebSpyGlobals::context),
+				  "Attacker");
+	printf("You machine trace:\n");
+	WebSpyGlobals::attacker.toString();
 
+	//Sweeper sweeper;
+	//vector<Host> avaiableHosts = sweeper.sweep();
+	// Host& victim = selectVictim(avaiableHosts);
+
+	/*
 	// TODO pegar IP e MAC do Gateway
 	Host gateway = Host::findGateway(iface);
 

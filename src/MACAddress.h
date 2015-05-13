@@ -10,19 +10,21 @@
 
 #include <cstdint>
 #include <string>
+#include <libnet.h>
+
+#include "WebSpyGlobals.h"
 
 class MACAddress {
-	uint64_t mac;
+	libnet_ether_addr *mac;
 
 public:
 	MACAddress();
 	MACAddress(std::string mac);
-	MACAddress(uint64_t mac);
+	MACAddress(libnet_ether_addr* mac);
 	virtual ~MACAddress();
 
-	uint64_t getMACAddress();
-	void setMACAddress(std::string mac);
-	void setMACAddress(uint64_t mac);
+	void setMACAddress(libnet_ether_addr* mac);
+	libnet_ether_addr* getMACAddress();
 
 	std::string toString();
 };

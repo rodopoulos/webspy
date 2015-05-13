@@ -41,6 +41,11 @@ IPAddress IPAddress::operator ++(){
 	return tmp;
 }
 
+// ----- Getters and Setters ------------------------------
+uint32_t IPAddress::getIP(){
+	return this->ip;
+}
+
 string IPAddress::toString(){
 	char tmp[16];
 	sprintf(tmp, "%d.%d.%d.%d",

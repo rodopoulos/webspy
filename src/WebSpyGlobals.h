@@ -8,20 +8,19 @@
 #ifndef WEBSPYGLOBALS_H_
 #define WEBSPYGLOBALS_H_
 
-#include <string>
 #include <libnet.h>
 
 #include "Host.h"
 
 class WebSpyGlobals {
 public:
-	static bool  verbose;
-	static bool  logging;
-	static char* browser;
-	static char* iface;
-	static char libnetErrBuffer[LIBNET_ERRBUF_SIZE];
-	static Host attacker;
-	static libnet_t* context;
+	static bool  		verbose;
+	static bool  		logging;
+	static char* 		browser;
+	static char* 		iface;
+	static char 		libnetErrBuffer[LIBNET_ERRBUF_SIZE];
+	static libnet_t* 	context;
+	static Host			attacker;
 };
 
 #endif /* WEBSPYGLOBALS_H_ */
