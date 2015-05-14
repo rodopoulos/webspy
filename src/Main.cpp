@@ -22,7 +22,6 @@
 
 //wepspy
 #include "WebSpyGlobals.h"
-#include "IPAddress.h"
 #include "Host.h"
 
 using namespace std;
@@ -133,8 +132,8 @@ int main(int argc, char* argv[]){
 	printf("Link type: %d\n", WebSpyGlobals::context->link_type);
 
 	WebSpyGlobals::attacker(libnet_get_ipaddr4(WebSpyGlobals::context),
-				  libnet_get_hwaddr(WebSpyGlobals::context),
-				  "Attacker");
+				  	  	  	libnet_get_hwaddr(WebSpyGlobals::context),
+							std::string("Attacker"));
 	printf("You machine trace:\n");
 	WebSpyGlobals::attacker.toString();
 

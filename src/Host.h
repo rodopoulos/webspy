@@ -12,16 +12,13 @@
 #include <vector>
 #include <libnet.h>
 
-#include "IPAddress.h"
-#include "MACAddress.h"
-
 class Host {
 private:
 	static int currentID;
 public:
 	int id;
-	IPAddress ip;
-	MACAddress mac;
+	uint32_t ip;
+	libnet_ether_addr* mac;
 	std::string name;
 
 	// Constructors
@@ -33,19 +30,14 @@ public:
 	void setIP(uint32_t ip);
 	void setMAC(libnet_ether_addr* mac);
 	void setName(std::string name);
-
 	libnet_ether_addr* getMAC();
 	uint32_t getIP();
 	std::string getName();
 
-	// Main Methods
-	Host& selectVictim(std::vector<Host*>& avaiableHosts);
-	void printHostList(std::vector<Host*>& hosts);
-	void sortByIP(std::vector<Host*>&);
-	void setHost();
-
 	// Utils
 	void toString();
+	char* macToString(libnet_ether_addr* mac);
+	char* ipToString(uint32_t ip);
 
 };
 
