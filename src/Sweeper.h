@@ -18,15 +18,7 @@
 
 class Sweeper {
 private:
-	static pcap_t* 			pcapContext;
-	static char				pcapErrBuffer[PCAP_ERRBUF_SIZE];
-	static bpf_u_int32		netMask;
-
-	static libnet_ptag_t	arpHeader;
 	static libnet_ptag_t	etherHeader;
-
-	static bpf_u_int32			ip;
-	static struct bpf_program 	filter;
 
 	void configARPSniffer();
 	void testHeader(libnet_ptag_t header);
