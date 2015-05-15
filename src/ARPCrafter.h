@@ -39,7 +39,7 @@ public:
 
 	void setSenderMAC(libnet_ether_addr* mac);
 	void setTargetMAC(libnet_ether_addr* mac);
-	void setBroadcast();
+	void setBroadcastMAC();
 	void setSenderIP(uint32_t ip);
 	void setTargetIP(uint32_t ip);
 	void setARPOperation(uint16_t op);

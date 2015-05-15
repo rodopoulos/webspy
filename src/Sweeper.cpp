@@ -43,6 +43,9 @@ vector<Host> Sweeper::sweep(){
 	printf("Net mask: %s\n", Host::ipToString((uint32_t)netMask).c_str());
 	printf("Number of probes: %u\n", range);
 
+	ARPCrafter arpCrafter(WebSpyGlobals::context);
+	arpCrafter.
+
 	vector<Host> tmp;
 	uint32_t i;
 	for(i = 0; i < range; i++){

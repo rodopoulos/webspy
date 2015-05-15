@@ -40,6 +40,12 @@ libnet_ptag_t ARPCrafter::newArp(uint16_t operation,
 			this->targetMAC->ether_addr_octet,
 			(uint8_t*)&this->targetIP,
 			this->context);
+
+	if(this->header == NULL){
+		printf(stderr, "webspy::ARPCrafter: [ERRO]LibNet error: couldn't create ARP packet.");
+		exit(EXIT_FAILURE);
+	}
+
 	return this->header;
 }
 
@@ -66,6 +72,10 @@ void ARPCrafter::setTargetIP(uint32_t ip){
 void ARPCrafter::setTargetMAC(libnet_ether_addr* mac){
 	this->targetMAC = mac;
 	refreshContext();
+}
+
+void ARPCrafter::setBroadcastMAC(){
+	this->targetMAC = broadcastMac;
 }
 
 void ARPCrafter::refreshContext(){
