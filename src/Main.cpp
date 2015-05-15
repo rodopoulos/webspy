@@ -22,6 +22,7 @@
 
 //wepspy
 #include "WebSpyGlobals.h"
+#include "Sweeper.h"
 #include "Host.h"
 
 using namespace std;
@@ -129,16 +130,16 @@ int main(int argc, char* argv[]){
 	}
 
 	printf("Inteface selected: %s\n", WebSpyGlobals::iface);
-	printf("Link type: %d\n", WebSpyGlobals::context->link_type);
 
-	WebSpyGlobals::attacker(libnet_get_ipaddr4(WebSpyGlobals::context),
-				  	  	  	libnet_get_hwaddr(WebSpyGlobals::context),
-							std::string("Attacker"));
-	printf("You machine trace:\n");
-	WebSpyGlobals::attacker.toString();
+	WebSpyGlobals::attacker.setIP(libnet_get_ipaddr4(WebSpyGlobals::context));
+	WebSpyGlobals::attacker.setMAC(libnet_get_hwaddr(WebSpyGlobals::context));
+	WebSpyGlobals::attacker.setName(string("Attacker"));
+	printf("Your machine address:\n");
+	printf("IP: %u\n", WebSpyGlobals::attacker.ip);
+	//WebSpyGlobals::attacker.toString();
 
-	//Sweeper sweeper;
-	//vector<Host> avaiableHosts = sweeper.sweep();
+	Sweeper sweeper;
+	vector<Host> avaiableHosts = sweeper.sweep();
 	// Host& victim = selectVictim(avaiableHosts);
 
 	/*

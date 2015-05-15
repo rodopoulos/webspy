@@ -8,9 +8,6 @@
 // this
 #include "Host.h"
 
-// std
-#include <iostream>
-
 using namespace std;
 
 int Host::currentID = 0;
@@ -51,29 +48,31 @@ uint32_t Host::getIP(){
 	return this->ip;
 }
 
+
 // Utils --------------------------------------------------------------------------------
 
 void Host::toString(){
-	cout << "Host "
-		 << " -> IP: " << ipToString(this->ip)
-		 << " MAC: " << macToString(this->mac)
-		 << " with name " << this->name << "\n";
+	printf("[HOST] IP: %s | MAC: %s", ipToString(this->ip).c_str(), macToString(this->mac).c_str());
+	if(this->name != "")
+		printf(" with name %s\n", this->name.c_str());
+	else
+		printf("\n");
 }
 
-char* Host::macToString(libnet_ether_addr* mac){
+std::string Host::macToString(libnet_ether_addr* mac){
 	char tmp[18];
 	sprintf(tmp, "%2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x",
-			this->mac->ether_addr_octet[0],
-			this->mac->ether_addr_octet[1],
-			this->mac->ether_addr_octet[2],
-			this->mac->ether_addr_octet[3],
-			this->mac->ether_addr_octet[4],
-			this->mac->ether_addr_octet[5]
+			&mac->ether_addr_octet[0],
+			&mac->ether_addr_octet[1],
+			&mac->ether_addr_octet[2],
+			&mac->ether_addr_octet[3],
+			&mac->ether_addr_octet[4],
+			&mac->ether_addr_octet[5]
 	);
-	return tmp;
+	return string(tmp);
 }
 
-char* Host::ipToString(uint32_t ip){
+std::string Host::ipToString(uint32_t ip){
 	char tmp[16];
 	sprintf(tmp, "%d.%d.%d.%d",
 			int(((uint8_t*)&ip)[0]),
@@ -81,5 +80,5 @@ char* Host::ipToString(uint32_t ip){
 			int(((uint8_t*)&ip)[2]),
 			int(((uint8_t*)&ip)[3])
 	);
-	return tmp;
+	return string(tmp);
 }

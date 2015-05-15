@@ -10,8 +10,9 @@
 
 #include <string>
 #include <vector>
-#include <pcap.h>
+#include <cmath>
 #include <libnet.h>
+#include <pcap.h>
 
 #include "Host.h"
 
@@ -19,15 +20,13 @@ class Sweeper {
 private:
 	static pcap_t* 			pcapContext;
 	static char				pcapErrBuffer[PCAP_ERRBUF_SIZE];
-	static bpf_u_int32			netMask;
+	static bpf_u_int32		netMask;
+
+	static libnet_ptag_t	arpHeader;
+	static libnet_ptag_t	etherHeader;
+
 	static bpf_u_int32			ip;
 	static struct bpf_program 	filter;
-
-	libnet_ptag_t	arpHeader;
-	libnet_ptag_t	etherHeader;
-
-	static uint8_t zeroedMac[6];
-	static uint8_t broadcastMac[6];
 
 	void configARPSniffer();
 	void testHeader(libnet_ptag_t header);

@@ -8,6 +8,7 @@
 #ifndef HOST_H_
 #define HOST_H_
 
+#include <cstdio>
 #include <string>
 #include <vector>
 #include <libnet.h>
@@ -36,8 +37,8 @@ public:
 
 	// Utils
 	void toString();
-	char* macToString(libnet_ether_addr* mac);
-	char* ipToString(uint32_t ip);
+	static std::string macToString(libnet_ether_addr* mac);
+	static std::string ipToString(uint32_t ip);
 
 };
 

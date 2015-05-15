@@ -15,69 +15,57 @@
 
 using namespace std;
 
+// Static Variables --------------------------------------------------------------
+pcap_t* 			Sweeper::pcapContext;
+char				Sweeper::pcapErrBuffer[PCAP_ERRBUF_SIZE];
+bpf_u_int32			Sweeper::netMask;
+libnet_ptag_t		Sweeper::arpHeader;
+libnet_ptag_t		Sweeper::etherHeader;
+bpf_u_int32			Sweeper::ip;
+struct bpf_program 	Sweeper::filter;
 
-uint8_t Sweeper::zeroedMac[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
-uint8_t Sweeper::broadcastMac[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
-
+// Constructors --------------------------------------------------------------
 Sweeper::Sweeper(){ }
 
 Sweeper::~Sweeper(){ }
 
+// Public --------------------------------------------------------------
 vector<Host> Sweeper::sweep(){
 	printf("\n== INITING SWEEP ==\n");
 	configARPSniffer();
-	printf("Network: %s\n", "IP");
-	printf("Mask: %d\n", "oi");
 	printf("\nARP Sniffing is on...\n");
 	printf("Starting to send ARP Requests...\n\n");
 
-	printf("Mounting ARP Header........ ");
-	//craftARPHeader();
-	printf("OK\n");
-
-	printf("Mounting Ethernet Header... ");
-	//craftEtherHeader();
-	printf("OK\n");
-
-	/* Montando os cabeçalhos dos ARP Requests
-	arpHeader = libnet_autobuild_arp(ARPOP_REQUEST,
-			WebSpyGlobals::attacker.getMac()->ether_addr_octet, WebSpyGlobals::attacker.getIP(),
-			currentIp, Sweeper::zeroedMac,
-			WebSpyGlobals::context);
-	testHeader(arpHeader);*/
-
-	etherHeader = libnet_autobuild_ethernet(Sweeper::broadcastMac,
-			ETHERTYPE_ARP,
-			WebSpyGlobals::context);
-	testHeader(etherHeader);
+	uint32_t currentIp = (uint32_t)ip;
+	uint32_t range = ~(uint32_t)netMask;
+	range = (range >> 24) + (range << 8 >> 16 ) + (range << 16 >> 8) + (range << 24) + 1;
+	printf("LAN IP: %s\n", Host::ipToString(currentIp).c_str());
+	printf("Net mask: %s\n", Host::ipToString((uint32_t)netMask).c_str());
+	printf("Number of probes: %u\n", range);
 
 	vector<Host> tmp;
-	int hostCount=0;
-	uint32_t currentIp;
-	for(;;){
-
-
-		libnet_write(WebSpyGlobals::context);
+	uint32_t i;
+	for(i = 0; i < range; i++){
+		printf("Probing host on %s ...\n", Host::ipToString(currentIp).c_str());
+		currentIp += 1 << 24; // Iterando um IP em little endian
 	}
 
-	pcap_close(Sweeper::pcapContext);
-	libnet_clear_packet(WebSpyGlobals::context);
 	return tmp;
 }
 
 void Sweeper::testHeader(libnet_ptag_t header){
-	/*if(header == -1){
+	if(header == -1){
 		fprintf(stderr,
 				"webspy::Sweeper: "
 				"[ERRO] LibNet error: "
 				"error on mount header: %s"
 				, libnet_geterror(WebSpyGlobals::context));
 		exit(EXIT_FAILURE);
-	}*/
+	}
 }
 
 void Sweeper::configARPSniffer(){
-	/*if(pcap_lookupnet(WebSpyGlobals::iface, &ip, &netMask, pcapErrBuffer) == -1){
+	if(pcap_lookupnet(WebSpyGlobals::iface, &ip, &netMask, pcapErrBuffer) == -1){
 		fprintf(stderr,
 				"webspy::Sweeper: "
 				"[WARN] pCap warning: "
@@ -105,5 +93,5 @@ void Sweeper::configARPSniffer(){
 	if(pcap_setfilter(pcapContext, &filter) == -1){
 		fprintf(stderr, "webspy::Sweeper: [ERRO] pCap error: couldn't apply arp filter: %s", pcapErrBuffer);
 		exit(EXIT_FAILURE);
-	}*/
+	}
 }
