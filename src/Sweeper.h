@@ -15,6 +15,9 @@
 #include <pcap.h>
 
 #include "Host.h"
+#include "Sniffer.h"
+#include "ARPCrafter.h"
+#include "EtherCrafter.h"
 
 class Sweeper {
 private:

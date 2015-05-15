@@ -10,13 +10,13 @@
 Sniffer::Sniffer(){ }
 
 Sniffer::Sniffer(char* filterExpression){
-	if(pcap_lookupnet(WebSpyGlobals::iface, &this->ip, &this->mask, this->pcapErrBuffer) == -1){
+	if(pcap_lookupnet(WebSpyGlobals::iface, &this->lan, &this->mask, this->pcapErrBuffer) == -1){
 		fprintf(stderr,
 				"webspy::Sweeper: [WARN] pCap warning: couldn't get interface %s netmask and IP\n",
 				this->pcapErrBuffer
 		);
 		this->mask = 0;
-		this->ip = 0;
+		this->lan = 0;
 	}
 
 	pcapContext = pcap_open_live(WebSpyGlobals::iface, BUFSIZ, 1, 1000, this->pcapErrBuffer);

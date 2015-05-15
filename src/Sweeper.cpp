@@ -28,9 +28,8 @@ vector<Host> Sweeper::sweep(){
 	printf("\n== INITING SWEEP ==\n");
 	Sniffer arpSniffer("arp");
 	printf("\nARP Sniffing is on...\n");
-	printf("Starting to send ARP Requests...\n\n");
 
-	uint32_t currentIp = (uint32_t)(arpSniffer.ip);
+	uint32_t currentIp = (uint32_t)(arpSniffer.lan);
 	uint32_t range = ~(uint32_t)(arpSniffer.mask);
 	range = (range >> 24) + (range << 8 >> 16 ) + (range << 16 >> 8) + (range << 24) + 1;
 	printf("LAN IP: %s\n", Host::ipToString(currentIp).c_str());
@@ -38,9 +37,11 @@ vector<Host> Sweeper::sweep(){
 	printf("Number of probes: %u\n", range);
 
 	ARPCrafter arpCrafter(WebSpyGlobals::context);
+	EtherCrafter etherCrafter(WebSpyGlobals::context);
 
 	vector<Host> tmp;
 	uint32_t i;
+	printf("Starting to send ARP Requests...\n\n");
 	for(i = 0; i < range; i++){
 		printf("Probing host on %s ...\n", Host::ipToString(currentIp).c_str());
 		currentIp += 1 << 24; // Iterando um IP em little endian

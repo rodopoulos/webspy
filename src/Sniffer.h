@@ -23,7 +23,7 @@ private:
 
 public:
 	bpf_u_int32		mask;
-	bpf_u_int32		ip;
+	bpf_u_int32		lan;
 
 	Sniffer();
 	Sniffer(char* filter);

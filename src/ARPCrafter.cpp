@@ -23,7 +23,7 @@ ARPCrafter::~ARPCrafter() {
 	libnet_clear_packet(this->context);
 }
 
-libnet_ptag_t ARPCrafter::newArp(uint16_t operation,
+libnet_ptag_t ARPCrafter::newARP(uint16_t operation,
 						libnet_ether_addr* senderMAC,
 						uint32_t senderIP,
 						libnet_ether_addr* targetMAC,
