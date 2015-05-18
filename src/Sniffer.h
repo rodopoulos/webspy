@@ -29,7 +29,7 @@ public:
 	Sniffer(char* filter);
 	virtual ~Sniffer();
 
-	char* nextPacket();
+	const unsigned char* nextPacket();
 };
 
 #endif /* SNIFFER_H_ */

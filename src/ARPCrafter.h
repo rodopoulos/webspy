@@ -16,9 +16,6 @@ private:
 	libnet_t* 		context;
 	libnet_ptag_t 	header;
 
-	static uint8_t 	zeroedMac[6];
-	static uint8_t 	broadcastMac[6];
-
 	void refreshContext();
 public:
 	uint16_t 			op;
@@ -26,6 +23,8 @@ public:
 	uint32_t 			targetIP;
 	libnet_ether_addr* 	senderMAC;
 	libnet_ether_addr* 	targetMAC;
+	static uint8_t 		zeroedMac[6];
+	static uint8_t 		broadcastMac[6];
 
 	ARPCrafter();
 	ARPCrafter(libnet_t* context);

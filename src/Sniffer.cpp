@@ -52,13 +52,13 @@ Sniffer::~Sniffer() {
 	pcap_close(this->context);
 }
 
-char* Sniffer::nextPacket(){
+const unsigned char* Sniffer::nextPacket(){
 	const unsigned char* packet;
-	packet = pcap_next(this->context, this->packet);
+	packet = pcap_next(this->context, &this->packet);
 	if(packet == NULL){
 		fprintf(stderr, "webspy::Sweeper: [ERRO] pCap error: error on getting packet");
 		exit(EXIT_FAILURE);
-	} else{
+	} else {
 		return packet;
 	}
 }

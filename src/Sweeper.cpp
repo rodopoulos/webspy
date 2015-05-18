@@ -15,9 +15,6 @@
 
 using namespace std;
 
-// Static Variables --------------------------------------------------------------
-libnet_ptag_t		Sweeper::etherHeader;
-
 // Constructors --------------------------------------------------------------
 Sweeper::Sweeper(){ }
 
@@ -39,11 +36,23 @@ vector<Host> Sweeper::sweep(){
 	ARPCrafter arpCrafter(WebSpyGlobals::context);
 	EtherCrafter etherCrafter(WebSpyGlobals::context);
 
+	arpCrafter.newARP(ARPOP_REQUEST, WebSpyGlobals::attacker.mac, WebSpyGlobals::attacker.ip, ARPCrafter::zeroedMac, currentIp);
+	etherCrafter.newEther(WebSpyGlobals::attacker.mac, EtherCrafter::zeroedMac, (uint16_t)ETHERTYPE_ARP);
+
 	vector<Host> tmp;
 	uint32_t i;
-	printf("Starting to send ARP Requests...\n\n");
+	//printf("Starting to send ARP Requests...\n\n");
 	for(i = 0; i < range; i++){
 		printf("Probing host on %s ...\n", Host::ipToString(currentIp).c_str());
+
+		libnet_write(WebSpyGlobals::context); 	  // Send
+		const unsigned char* packetBuffer;
+		packetBuffer = arpSniffer.nextPacket();   // Listen
+		libnet_arp_hdr* arpReply;
+		arpReply = (struct libnet_arp_hdr*)packetBuffer + LIBNET_ETH_H;
+
+		printf("Pacote recebido: %s\n", arpReply->ar_op == ARP_REPLY ? "ARP_REPLY" : "ARP_REQUEST");
+
 		currentIp += 1 << 24; // Iterando um IP em little endian
 	}
 

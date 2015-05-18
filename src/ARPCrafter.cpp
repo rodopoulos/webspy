@@ -8,7 +8,7 @@
 #include "ARPCrafter.h"
 
 uint8_t ARPCrafter::zeroedMac[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
-uint8_t ARPCrafter::broadcastMac[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+uint8_t ARPCrafter::broadcastMac[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
 ARPCrafter::ARPCrafter() : context(NULL) { }
 
@@ -41,8 +41,8 @@ libnet_ptag_t ARPCrafter::newARP(uint16_t operation,
 			(uint8_t*)&this->targetIP,
 			this->context);
 
-	if(this->header == NULL){
-		printf(stderr, "webspy::ARPCrafter: [ERRO]LibNet error: couldn't create ARP packet.");
+	if(this->header == -1){
+		fprintf(stderr, "webspy::ARPCrafter: [ERRO]LibNet error: couldn't create ARP packet.");
 		exit(EXIT_FAILURE);
 	}
 
@@ -75,7 +75,8 @@ void ARPCrafter::setTargetMAC(libnet_ether_addr* mac){
 }
 
 void ARPCrafter::setBroadcastMAC(){
-	this->targetMAC = broadcastMac;
+	memcpy(this->targetMAC->ether_addr_octet, broadcastMac, sizeof(broadcastMac) + 1);
+	refreshContext();
 }
 
 void ARPCrafter::refreshContext(){
