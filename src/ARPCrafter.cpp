@@ -80,7 +80,7 @@ void ARPCrafter::setBroadcastMAC(){
 }
 
 void ARPCrafter::refreshContext(){
-	libnet_build_arp(DLT_EN10MB, ETHERTYPE_IP, 6, 4,
+	libnet_build_arp(ARPHRD_ETHER, ETHERTYPE_IP, 6, 4,
 				this->op,
 				this->senderMAC->ether_addr_octet,
 				(uint8_t*)&this->senderIP,
@@ -89,4 +89,18 @@ void ARPCrafter::refreshContext(){
 				NULL, 0,
 				this->context,
 				this->header);
+}
+
+const char* ARPCrafter::getARPOperationName(int op){
+	switch(op){
+		case ARPOP_REPLY:
+			return "ARP_REPLY";
+			break;
+		case ARPOP_REQUEST:
+			return "ARP_REQUEST";
+			break;
+		default:
+			return "Other";
+			break;
+	}
 }

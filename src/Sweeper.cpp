@@ -10,9 +10,6 @@
 // this
 #include "Sweeper.h"
 
-// local
-#include "WebSpyGlobals.h"
-
 using namespace std;
 
 // Constructors --------------------------------------------------------------
@@ -22,40 +19,63 @@ Sweeper::~Sweeper(){ }
 
 // Public --------------------------------------------------------------
 vector<Host> Sweeper::sweep(){
-	printf("\n== INITING SWEEP ==\n");
+	printf("\n========================== INITING SWEEP ============================\n");
 	Sniffer arpSniffer("arp");
-	printf("\nARP Sniffing is on...\n");
+	printf("\nARP Sniffing is on...\n\n");
 
 	uint32_t currentIp = (uint32_t)(arpSniffer.lan);
-	uint32_t range = ~(uint32_t)(arpSniffer.mask);
-	range = (range >> 24) + (range << 8 >> 16 ) + (range << 16 >> 8) + (range << 24) + 1;
-	printf("LAN IP: %s\n", Host::ipToString(currentIp).c_str());
-	printf("Net mask: %s\n", Host::ipToString((arpSniffer.mask)).c_str());
-	printf("Number of probes: %u\n", range);
+	printf("=== LAN Config ===\n");
+	printf("IP Space: %s\n", Host::ipToString(currentIp).c_str());
+	printf("Mask: %s\n", Host::ipToString((arpSniffer.mask)).c_str());
+	printf("Link type: %s\n", arpSniffer.getLinkName());
 
 	ARPCrafter arpCrafter(WebSpyGlobals::context);
 	EtherCrafter etherCrafter(WebSpyGlobals::context);
+	arpCrafter.newARP(ARPOP_REQUEST, WebSpyGlobals::attacker.mac, WebSpyGlobals::attacker.ip, EtherCrafter::zeroedMac, currentIp);
+	etherCrafter.newEther(WebSpyGlobals::attacker.mac, EtherCrafter::broadcastMac, (uint16_t)ETHERTYPE_ARP);
 
-	arpCrafter.newARP(ARPOP_REQUEST, WebSpyGlobals::attacker.mac, WebSpyGlobals::attacker.ip, ARPCrafter::zeroedMac, currentIp);
-	etherCrafter.newEther(WebSpyGlobals::attacker.mac, EtherCrafter::zeroedMac, (uint16_t)ETHERTYPE_ARP);
+	uint32_t range = ~(uint32_t)(arpSniffer.mask);
+	range = (range >> 24) + (range << 8 >> 16 ) + (range << 16 >> 8) + (range << 24) + 1;
 
 	vector<Host> tmp;
-	uint32_t i;
-	//printf("Starting to send ARP Requests...\n\n");
+	unsigned int i;
+	const unsigned char* packetBuffer;
+	ARPCrafter::arp_pkt* arpReply;
+
+	printf("\nStarting to send ARP Requests...\n");
+	printf("Number of probes: %u\n", range);
 	for(i = 0; i < range; i++){
-		printf("Probing host on %s ...\n", Host::ipToString(currentIp).c_str());
+		printf("    Probing host on %s ... ", Host::ipToString(currentIp).c_str());
 
 		libnet_write(WebSpyGlobals::context); 	  // Send
-		const unsigned char* packetBuffer;
 		packetBuffer = arpSniffer.nextPacket();   // Listen
-		libnet_arp_hdr* arpReply;
-		arpReply = (struct libnet_arp_hdr*)packetBuffer + LIBNET_ETH_H;
 
-		printf("Pacote recebido: %s\n", arpReply->ar_op == ARP_REPLY ? "ARP_REPLY" : "ARP_REQUEST");
-
+		if(packetBuffer){
+			arpReply = LIBNET_ETH_H + (ARPCrafter::arp_pkt*) packetBuffer;
+			printf("response with MAC \n");
+			printf("\tPacote recebido: %s (%d)\n", ARPCrafter::getARPOperationName(ntohs(arpReply->arpOp)), arpReply->spaddr);
+		} else {
+			printf("timeout\n");
+		}
+		getchar();
 		currentIp += 1 << 24; // Iterando um IP em little endian
+		arpCrafter.setTargetIP(currentIp);
 	}
 
 	return tmp;
 }
 
+/* HEX DUMP
+ *
+ * int i, j = 1;
+		printf("\nPacote: \n");
+		for(i = 14; i < 42; i++){
+			printf("%02x ", packetBuffer[i]);
+			if(j == 4){
+				j = 0;
+				printf("\n");
+			}
+			j++;
+		}
+		printf("\n");
+ * */

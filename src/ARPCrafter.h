@@ -18,6 +18,18 @@ private:
 
 	void refreshContext();
 public:
+	struct arp_pkt{
+		uint16_t	htype;
+		uint16_t	ptype;
+		uint8_t		hsize;
+		uint8_t		psize;
+		uint16_t	arpOp;
+		uint8_t		shaddr[6];
+		uint32_t	spaddr;
+		uint8_t		thaddr[6];
+		uint32_t	tpaddr;
+	};
+
 	uint16_t 			op;
 	uint32_t 			senderIP;
 	uint32_t 			targetIP;
@@ -42,6 +54,8 @@ public:
 	void setSenderIP(uint32_t ip);
 	void setTargetIP(uint32_t ip);
 	void setARPOperation(uint16_t op);
+
+	static const char* getARPOperationName(int op);
 };
 
 #endif /* SRC_ARPCRAFTER_H_ */

@@ -7,6 +7,7 @@
 
 // std-cpp
 #include <iostream>
+#include <string>
 #include <vector>
 
 //std-c
@@ -129,14 +130,13 @@ int main(int argc, char* argv[]){
 		exit(EXIT_FAILURE);
 	}
 
-	printf("Inteface selected: %s\n", WebSpyGlobals::iface);
+	printf("\nInteface selected: %s\n", WebSpyGlobals::iface);
 
 	WebSpyGlobals::attacker.setIP(libnet_get_ipaddr4(WebSpyGlobals::context));
 	WebSpyGlobals::attacker.setMAC(libnet_get_hwaddr(WebSpyGlobals::context));
 	WebSpyGlobals::attacker.setName(string("Attacker"));
-	printf("Your machine address:\n");
-	printf("IP: %u\n", WebSpyGlobals::attacker.ip);
-	//WebSpyGlobals::attacker.toString();
+	printf("Your machine:\n\t");
+	WebSpyGlobals::attacker.toString();
 
 	Sweeper sweeper;
 	vector<Host> avaiableHosts = sweeper.sweep();

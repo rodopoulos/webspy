@@ -7,9 +7,25 @@
 
 #include "EtherCrafter.h"
 
-EtherCrafter::EtherCrafter() : context(NULL) {}
+libnet_ether_addr* EtherCrafter::broadcastMac;
+libnet_ether_addr* EtherCrafter::zeroedMac;
+
+EtherCrafter::EtherCrafter() : context(NULL) {
+	broadcastMac = (libnet_ether_addr*) malloc(sizeof(libnet_ether_addr));
+	zeroedMac = (libnet_ether_addr*) malloc(sizeof(libnet_ether_addr));
+	uint8_t tmpBroad[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+	uint8_t tmpZero[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	memcpy(broadcastMac->ether_addr_octet, tmpBroad, sizeof(tmpBroad));
+	memcpy(zeroedMac->ether_addr_octet, tmpZero, sizeof(tmpZero));
+}
 
 EtherCrafter::EtherCrafter(libnet_t* context) : context(context) {
+	broadcastMac = (libnet_ether_addr*) malloc(sizeof(libnet_ether_addr));
+	zeroedMac = (libnet_ether_addr*) malloc(sizeof(libnet_ether_addr));
+	uint8_t tmpBroad[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+	uint8_t tmpZero[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	memcpy(broadcastMac->ether_addr_octet, tmpBroad, sizeof(tmpBroad));
+	memcpy(zeroedMac->ether_addr_octet, tmpZero, sizeof(tmpZero));
 	if(!this->context){
 		fprintf(stderr, "webspy::EtherCrafter: [ERRO]LibNet error: received a null context. Try run as sudo.");
 		exit(EXIT_FAILURE);
@@ -17,7 +33,7 @@ EtherCrafter::EtherCrafter(libnet_t* context) : context(context) {
 }
 
 EtherCrafter::~EtherCrafter() {
-	// TODO Auto-generated destructor stub
+	libnet_clear_packet(this->context);
 }
 
 libnet_ptag_t EtherCrafter::newEther(libnet_ether_addr* senderMAC, libnet_ether_addr* targetMAC, uint16_t protocol){

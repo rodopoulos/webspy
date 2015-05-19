@@ -48,9 +48,7 @@ uint32_t Host::getIP(){
 	return this->ip;
 }
 
-
 // Utils --------------------------------------------------------------------------------
-
 void Host::toString(){
 	printf("[HOST] IP: %s | MAC: %s", ipToString(this->ip).c_str(), macToString(this->mac).c_str());
 	if(this->name != "")
@@ -62,12 +60,12 @@ void Host::toString(){
 std::string Host::macToString(libnet_ether_addr* mac){
 	char tmp[18];
 	sprintf(tmp, "%2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x",
-			&mac->ether_addr_octet[0],
-			&mac->ether_addr_octet[1],
-			&mac->ether_addr_octet[2],
-			&mac->ether_addr_octet[3],
-			&mac->ether_addr_octet[4],
-			&mac->ether_addr_octet[5]
+			mac->ether_addr_octet[0],
+			mac->ether_addr_octet[1],
+			mac->ether_addr_octet[2],
+			mac->ether_addr_octet[3],
+			mac->ether_addr_octet[4],
+			mac->ether_addr_octet[5]
 	);
 	return string(tmp);
 }

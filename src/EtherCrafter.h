@@ -18,8 +18,8 @@ private:
 	void refreshContext();
 
 public:
-	static uint8_t 		zeroedMac[6];
-	static uint8_t 		broadcastMac[6];
+	static libnet_ether_addr* 	zeroedMac;
+	static libnet_ether_addr*  broadcastMac;
 	libnet_ether_addr* 	senderMAC;
 	libnet_ether_addr* 	targetMAC;
 	uint16_t		   	upperProtocol;
