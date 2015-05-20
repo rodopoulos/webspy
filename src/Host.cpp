@@ -88,3 +88,12 @@ std::string Host::ipToString(uint32_t ip){
 	);
 	return string(tmp);
 }
+
+bool Host::isSameMAC(uint8_t mac1[], uint8_t mac2[]){
+	int i;
+	for (i = 0; i < 6; i++){
+		if(mac1[i] != mac2[i])
+			return false;
+	}
+	return true;
+}

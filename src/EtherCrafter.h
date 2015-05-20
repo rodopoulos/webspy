@@ -9,6 +9,15 @@
 #define ETHERCRAFTER_H_
 
 #include <libnet.h>
+#include <pcap.h>
+
+struct EtherHeader{
+	uint8_t		thaddr[6];	/* Target MAC Address */
+	uint8_t		shaddr[6];	/* Sender MAC Address */
+	uint16_t	ptype;		/* Protocol type */
+	EtherHeader(unsigned char* buf);
+	const char* getProtocolTypeName();
+};
 
 class EtherCrafter {
 private:

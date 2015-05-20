@@ -99,6 +99,9 @@ const char* ARPCrafter::getARPOperationName(int op){
 		case ARPOP_REQUEST:
 			return "ARP_REQUEST";
 			break;
+		case 0:
+			return "NO_ARP";
+			break;
 		default:
 			return "Other";
 			break;

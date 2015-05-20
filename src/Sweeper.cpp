@@ -21,28 +21,19 @@ Sweeper::~Sweeper(){ }
 vector<Host> Sweeper::sweep(){
 	printf("\n========================== INITING SWEEP ============================\n");
 	Sniffer arpSniffer("arp");
-	printf("\nARP Sniffing is on...\n\n");
+	arpSniffer.showLANProps();
 
 	uint32_t currentIp = (uint32_t)(arpSniffer.lan);
-	printf("=== LAN Config ===\n");
-	printf("IP Space: %s\n", Host::ipToString(currentIp).c_str());
-	printf("Mask: %s\n", Host::ipToString((arpSniffer.mask)).c_str());
-	printf("Link type: %s\n", arpSniffer.getLinkName());
 
 	ARPCrafter arpCrafter(WebSpyGlobals::context);
 	EtherCrafter etherCrafter(WebSpyGlobals::context);
 	arpCrafter.newARP(ARPOP_REQUEST, WebSpyGlobals::attacker.mac, WebSpyGlobals::attacker.ip, EtherCrafter::zeroedMac, currentIp);
 	etherCrafter.newEther(WebSpyGlobals::attacker.mac, EtherCrafter::broadcastMac, (uint16_t)ETHERTYPE_ARP);
 
-	uint32_t range = ~(uint32_t)(arpSniffer.mask);
-	range = (range >> 24) + (range << 8 >> 16 ) + (range << 16 >> 8) + (range << 24) + 1;
-
+	uint32_t range = ~htonl(arpSniffer.mask);
 	vector<Host> tmp;
 	unsigned int i;
 	const unsigned char* buffer;
-
-	for(i = 0; i < 100; i++)
-		currentIp += 1 << 24; // Iterando um IP em little endian
 
 	printf("\nStarting to send ARP Requests...\n");
 	printf("Number of probes: %u\n", range);
@@ -53,36 +44,38 @@ vector<Host> Sweeper::sweep(){
 		}
 		printf("    Probing host on %s ... ", Host::ipToString(currentIp).c_str());
 
-		libnet_write(WebSpyGlobals::context); 	  // Send
-		buffer = arpSniffer.nextPacket();   // Listen
+		libnet_write(WebSpyGlobals::context); 	  	// Send
+		buffer = arpSniffer.nextPacket();   		// Listen
 
 		if(buffer){
 			ARPPacket arpReply((unsigned char*)buffer);
-			if(ntohs(arpReply.arpOp) == ARPOP_REPLY){
-				printf("response with MAC %s\n", Host::macToString(arpReply.shaddr).c_str());
-			} else {
-				printf("timeout\n");
+
+			if(Host::isSameMAC(arpReply.thaddr, WebSpyGlobals::attacker.mac->ether_addr_octet)){
+				if(ntohs(arpReply.arpOp) == ARPOP_REPLY){
+					printf("response with MAC %s (with IP %s)\n", Host::macToString(arpReply.shaddr).c_str(), Host::ipToString(arpReply.spaddr).c_str());
+				} else {
+					printf("no response\n");
+				}
 			}
 		}
 		getchar();
-		currentIp += 1 << 24; // Iterando um IP em little endian
+		currentIp = ntohl((htonl(currentIp) + 1)); // Iterando um IP em little endian
 		arpCrafter.setTargetIP(currentIp);
 	}
 
 	return tmp;
 }
 
-/* HEX DUMP
- *
- * int i, j = 1;
-		printf("\nPacote: \n");
-		for(i = 14; i < 42; i++){
-			printf("%02x ", packetBuffer[i]);
-			if(j == 4){
-				j = 0;
-				printf("\n");
-			}
-			j++;
+void Sweeper::hexDump(const unsigned char* buf, int iByte, int lByte){
+	int i, j = 1;
+	printf("\nPacket hex dump (byte offset %d - %d): \n", iByte, lByte);
+	for(i = iByte; i < lByte; i++){
+		printf("%02x ", buf[i]);
+		if(j == 4){
+			j = 0;
+			printf("\n");
 		}
-		printf("\n");
- * */
+		j++;
+	}
+	printf("\n\n");
+}

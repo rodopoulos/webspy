@@ -9,8 +9,10 @@
 #define SNIFFER_H_
 
 #include <pcap.h>
+#include <string>
 
 #include "WebSpyGlobals.h"
+#include "Host.h"
 
 class Sniffer {
 
@@ -24,10 +26,13 @@ private:
 public:
 	bpf_u_int32		mask;
 	bpf_u_int32		lan;
+	char*			filterExpression;
 
 	Sniffer();
-	Sniffer(const char filter[]);
+	Sniffer(char filter[]);
 	virtual ~Sniffer();
+
+	void showLANProps();
 
 	const unsigned char* nextPacket();
 	const char* getLinkName();

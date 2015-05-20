@@ -80,3 +80,33 @@ void EtherCrafter::refreshContext(){
 		this->header
 	);
 }
+
+// --------- ETHER HEADER METHODS ------------------------------------
+
+EtherHeader::EtherHeader(unsigned char *buf){
+	memcpy(&thaddr, buf, 6);
+	buf = buf + 6;
+	memcpy(&shaddr, buf, 6);
+	buf = buf + 6;
+	memcpy(&ptype, buf, 2);
+}
+
+const char* EtherHeader::getProtocolTypeName(){
+	switch(htons(this->ptype)){
+	case ETHERTYPE_ARP:
+		return "ARP";
+		break;
+	case ETHERTYPE_IP:
+		return "IP";
+		break;
+	case ETHERTYPE_IPV6:
+		return "IPv6";
+		break;
+	case ETHERTYPE_LOOPBACK:
+		return "Loopback";
+		break;
+	default:
+		return "Other";
+		break;
+	}
+}

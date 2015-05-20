@@ -20,8 +20,6 @@
 #include "ARPCrafter.h"
 #include "EtherCrafter.h"
 
-#define ARP_REQUEST 1
-#define ARP_REPLY 	2
 
 class Sweeper {
 private:
@@ -34,6 +32,7 @@ public:
 	virtual ~Sweeper();
 
 	std::vector<Host> sweep();
+	void hexDump(const unsigned char* buf, int iByte, int lByte);
 };
 
 #endif /* SWEEPER_H_ */
