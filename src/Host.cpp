@@ -70,6 +70,14 @@ std::string Host::macToString(libnet_ether_addr* mac){
 	return string(tmp);
 }
 
+std::string Host::macToString(uint8_t mac[]){
+	char tmp[18];
+	sprintf(tmp, "%2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x",
+			mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]
+	);
+	return string(tmp);
+}
+
 std::string Host::ipToString(uint32_t ip){
 	char tmp[16];
 	sprintf(tmp, "%d.%d.%d.%d",

@@ -10,6 +10,19 @@
 
 #include <libnet.h>
 
+struct ARPPacket{
+	uint16_t	htype;
+	uint16_t	ptype;
+	uint8_t		hsize;
+	uint8_t		psize;
+	uint16_t	arpOp;
+	uint8_t		shaddr[6];
+	uint32_t	spaddr;
+	uint8_t		thaddr[6];
+	uint32_t	tpaddr;
+	ARPPacket(unsigned char* buf);
+};
+
 class ARPCrafter {
 
 private:
@@ -18,17 +31,6 @@ private:
 
 	void refreshContext();
 public:
-	struct arp_pkt{
-		uint16_t	htype;
-		uint16_t	ptype;
-		uint8_t		hsize;
-		uint8_t		psize;
-		uint16_t	arpOp;
-		uint8_t		shaddr[6];
-		uint32_t	spaddr;
-		uint8_t		thaddr[6];
-		uint32_t	tpaddr;
-	};
 
 	uint16_t 			op;
 	uint32_t 			senderIP;

@@ -38,6 +38,7 @@ public:
 	// Utils
 	void toString();
 	static std::string macToString(libnet_ether_addr* mac);
+	static std::string macToString(uint8_t mac[]);
 	static std::string ipToString(uint32_t ip);
 
 };

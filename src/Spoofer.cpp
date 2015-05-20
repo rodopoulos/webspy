@@ -7,12 +7,14 @@
 
 #include "Spoofer.h"
 
-Spoofer::Spoofer(Host* victim) {
-	Host gateway;
-	//gateway.setGateway();
+Spoofer::Spoofer() {
+
 }
 
 Spoofer::~Spoofer() {
 	// TODO Auto-generated destructor stub
 }
 
+void Spoofer::spoof(){
+
+}

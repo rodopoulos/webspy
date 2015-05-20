@@ -104,3 +104,12 @@ const char* ARPCrafter::getARPOperationName(int op){
 			break;
 	}
 }
+
+ARPPacket::ARPPacket(unsigned char* buf){
+	buf += 14; // Jumping Ethernet Header
+	memcpy(&htype, buf, 14);
+	buf += 14; // Jumping ARP Header
+	memcpy(&spaddr, buf, 10);
+	buf += 10; // Jumping Sender MAC and IP
+	memcpy(&tpaddr, buf, 4);
+}

@@ -39,23 +39,30 @@ vector<Host> Sweeper::sweep(){
 
 	vector<Host> tmp;
 	unsigned int i;
-	const unsigned char* packetBuffer;
-	ARPCrafter::arp_pkt* arpReply;
+	const unsigned char* buffer;
+
+	for(i = 0; i < 100; i++)
+		currentIp += 1 << 24; // Iterando um IP em little endian
 
 	printf("\nStarting to send ARP Requests...\n");
 	printf("Number of probes: %u\n", range);
-	for(i = 0; i < range; i++){
+	for(i = 100; i < range; i++){
+		if(currentIp == WebSpyGlobals::attacker.ip){
+			currentIp += 1 << 24; // Iterando um IP em little endian
+			continue;
+		}
 		printf("    Probing host on %s ... ", Host::ipToString(currentIp).c_str());
 
 		libnet_write(WebSpyGlobals::context); 	  // Send
-		packetBuffer = arpSniffer.nextPacket();   // Listen
+		buffer = arpSniffer.nextPacket();   // Listen
 
-		if(packetBuffer){
-			arpReply = LIBNET_ETH_H + (ARPCrafter::arp_pkt*) packetBuffer;
-			printf("response with MAC \n");
-			printf("\tPacote recebido: %s (%d)\n", ARPCrafter::getARPOperationName(ntohs(arpReply->arpOp)), arpReply->spaddr);
-		} else {
-			printf("timeout\n");
+		if(buffer){
+			ARPPacket arpReply((unsigned char*)buffer);
+			if(ntohs(arpReply.arpOp) == ARPOP_REPLY){
+				printf("response with MAC %s\n", Host::macToString(arpReply.shaddr).c_str());
+			} else {
+				printf("timeout\n");
+			}
 		}
 		getchar();
 		currentIp += 1 << 24; // Iterando um IP em little endian

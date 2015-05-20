@@ -8,13 +8,21 @@
 #ifndef SPOOFER_H_
 #define SPOOFER_H_
 
+#include <libnet.h>
+#include <cstdio>
+
+#include "WebSpyGlobals.h"
 #include "Host.h"
+#include "ARPCrafter.h"
+#include "EtherCrafter.h"
 
 class Spoofer {
 
 public:
-	Spoofer(Host* victim);
+	Spoofer();
 	virtual ~Spoofer();
+
+	void spoof();
 };
 
 #endif /* SPOOFER_H_ */
