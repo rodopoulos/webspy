@@ -24,6 +24,12 @@ Host::Host(uint32_t ip, libnet_ether_addr* mac, string name) : ip(ip), mac(mac),
 	currentID++;
 }
 
+Host::Host(uint32_t ip, uint8_t mac[], string name){
+	this->ip = ip;
+	//this->mac->ether_addr_octet = mac;
+	this->name = name;
+}
+
 Host::~Host() {}
 
 // Getters e Setters --------------------------------------------------------------------

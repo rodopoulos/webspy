@@ -30,39 +30,42 @@ vector<Host> Sweeper::sweep(){
 	arpCrafter.newARP(ARPOP_REQUEST, WebSpyGlobals::attacker.mac, WebSpyGlobals::attacker.ip, EtherCrafter::zeroedMac, currentIp);
 	etherCrafter.newEther(WebSpyGlobals::attacker.mac, EtherCrafter::broadcastMac, (uint16_t)ETHERTYPE_ARP);
 
-	uint32_t range = ~htonl(arpSniffer.mask);
-	vector<Host> tmp;
 	unsigned int i;
-	const unsigned char* buffer;
+	vector<Host> tmp;
+	uint32_t range = ~htonl(arpSniffer.mask);
+	printf("\nSending %u ARP Requests. Starting...\n", range);
+	for(i = 0; i < range; i++){
+		currentIp = ntohl((htonl(currentIp) + 1)); 		// Iterando um IP em little endian
 
-	printf("\nStarting to send ARP Requests...\n");
-	printf("Number of probes: %u\n", range);
-	for(i = 100; i < range; i++){
-		if(currentIp == WebSpyGlobals::attacker.ip){
-			currentIp += 1 << 24; // Iterando um IP em little endian
-			continue;
-		}
-		printf("    Probing host on %s ... ", Host::ipToString(currentIp).c_str());
+		if(currentIp != WebSpyGlobals::attacker.ip){
+			printf("    Probing host on %s ... ", Host::ipToString(currentIp).c_str());
+			const unsigned char* buffer;
 
-		libnet_write(WebSpyGlobals::context); 	  	// Send
-		buffer = arpSniffer.nextPacket();   		// Listen
+			libnet_write(WebSpyGlobals::context); 	  	// Send
+			buffer = arpSniffer.nextPacket();   		// Listen
 
-		if(buffer){
-			ARPPacket arpReply((unsigned char*)buffer);
-
-			if(Host::isSameMAC(arpReply.thaddr, WebSpyGlobals::attacker.mac->ether_addr_octet)){
-				if(ntohs(arpReply.arpOp) == ARPOP_REPLY){
-					printf("response with MAC %s (with IP %s)\n", Host::macToString(arpReply.shaddr).c_str(), Host::ipToString(arpReply.spaddr).c_str());
+			if(buffer){
+				ARPPacket arpReply((unsigned char*)buffer);
+				if(Host::isSameMAC(arpReply.thaddr, WebSpyGlobals::attacker.mac->ether_addr_octet)){
+					if(ntohs(arpReply.arpOp) == ARPOP_REPLY){
+						printf("response with MAC %s (with IP %s)\n", Host::macToString(arpReply.shaddr).c_str(), Host::ipToString(arpReply.spaddr).c_str());
+						Host newHost(arpReply.spaddr, arpReply.shaddr, "");
+						tmp.push_back(newHost);
+					} else {
+						printf("ARP frame, but it's not reply\n");
+					}
 				} else {
-					printf("no response\n");
+					printf("ARP frame, but not for host\n");
 				}
+			} else {
+				printf("no response at all\n");
 			}
+			arpCrafter.setTargetIP(currentIp);
 		}
-		getchar();
-		currentIp = ntohl((htonl(currentIp) + 1)); // Iterando um IP em little endian
-		arpCrafter.setTargetIP(currentIp);
+		// getchar();
 	}
 
+	printf("Respostas: %d\n", tmp.size());
 	return tmp;
 }
 

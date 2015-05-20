@@ -25,6 +25,7 @@ public:
 	// Constructors
 	Host();
 	Host(uint32_t ip, libnet_ether_addr* mac, std::string name);
+	Host(uint32_t ip, uint8_t* mac, std::string name);
 	virtual ~Host();
 
 	// Getters e Setters
