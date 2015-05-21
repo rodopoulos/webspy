@@ -70,7 +70,8 @@ vector<Host> Sweeper::sweep(){
 		}
 	}
 
-	printf("Respostas: %d\n", (int)tmp.size());
+	int nHosts = (int)tmp.size();
+	printf("%d %s found.\n", nHosts, nHosts <= 1 ? "host" : "hosts");
 	return tmp;
 }
 

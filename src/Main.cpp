@@ -108,6 +108,21 @@ static void selectInterface(){
 	WebSpyGlobals::iface = ifacesNames[opt - 1];
 }
 
+static Host& selectVictim(vector<Host> hosts){
+	vector<Host>::iterator it;
+	int i = 1;
+	printf("\nID     IP                  MAC\n");
+	for(it = hosts.begin(); it != hosts.end(); it++){
+		printf("%-3d    %-15s     %-17s\n", i, Host::ipToString(it->ip).c_str(), Host::macToString(it->mac).c_str());
+		i++;
+	}
+	int op;
+	printf("\nSelect victim [ID]: ");
+	scanf("%d", &op);
+	// TODO teste de leitura do scanf
+	return hosts[op - 1];
+}
+
 int main(int argc, char* argv[]){
 	parseProgramArguments(argc, argv);
 
@@ -137,8 +152,13 @@ int main(int argc, char* argv[]){
 
 	Sweeper sweeper;
 	vector<Host> avaiableHosts = sweeper.sweep();
-	// Host& victim = selectVictim(avaiableHosts);
+	if(avaiableHosts.size() == 0){
+		printf("No hosts on the net besides you. Exiting...\n");
+		exit(EXIT_SUCCESS);
+	}
 
+	Host& victim = selectVictim(avaiableHosts);
+	victim.toString();
 	/*
 	TODO pegar IP e MAC do Gateway
 	Host gateway = Host::findGateway(iface);
