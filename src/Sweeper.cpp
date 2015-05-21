@@ -19,9 +19,9 @@ Sweeper::~Sweeper(){ }
 
 // Public --------------------------------------------------------------
 vector<Host> Sweeper::sweep(){
-	printf("\n========================== INITING SWEEP ============================\n");
 	Sniffer arpSniffer("arp");
-	arpSniffer.showLANProps();
+	if(WebSpyGlobals::verbose)
+		arpSniffer.showLANProps();
 
 	uint32_t currentIp = (uint32_t)(arpSniffer.lan);
 
@@ -38,35 +38,57 @@ vector<Host> Sweeper::sweep(){
 		currentIp = ntohl((htonl(currentIp) + 1)); 		// Iterando um IP em little endian
 
 		if(currentIp != WebSpyGlobals::attacker.ip){
-			printf("    Probing host on %s ... ", Host::ipToString(currentIp).c_str());
+			if(WebSpyGlobals::verbose)
+				printf("  Probing host on %s\n", Host::ipToString(currentIp).c_str());
+
 			const unsigned char* buffer;
+			libnet_write(WebSpyGlobals::context); 	  				// Send
 
-			libnet_write(WebSpyGlobals::context); 	  	// Send
-			buffer = arpSniffer.nextPacket();   		// Listen
-
-			if(buffer){
+			buffer = arpSniffer.nextPacket();
+			do{
 				ARPPacket arpReply((unsigned char*)buffer);
 				if(Host::isSameMAC(arpReply.thaddr, WebSpyGlobals::attacker.mac->ether_addr_octet)){
 					if(ntohs(arpReply.arpOp) == ARPOP_REPLY){
-						printf("response with MAC %s (with IP %s)\n", Host::macToString(arpReply.shaddr).c_str(), Host::ipToString(arpReply.spaddr).c_str());
-						Host newHost(arpReply.spaddr, arpReply.shaddr, "");
-						tmp.push_back(newHost);
+						if(!hasHostIP(tmp, arpReply.spaddr)){
+							printf("  Host with MAC %s responded for IP %s!\n", Host::macToString(arpReply.shaddr).c_str(), Host::ipToString(arpReply.spaddr).c_str());
+							Host newHost(arpReply.spaddr, arpReply.shaddr, "");
+							tmp.push_back(newHost);
+						}
 					} else {
-						printf("ARP frame, but it's not reply\n");
+						if(WebSpyGlobals::verbose)
+							printf("ARP frame for me, but it's not a reply\n");
 					}
 				} else {
-					printf("ARP frame, but not for host\n");
+					//printf("ARP frame (%s), but not for me\n", ARPCrafter::getARPOperationName(arpReply.arpOp));
+					if(WebSpyGlobals::verbose)
+						printf(" timeout.\n");
 				}
-			} else {
-				printf("no response at all\n");
-			}
+				buffer = arpSniffer.nextPacket();
+			} while(buffer);
+
 			arpCrafter.setTargetIP(currentIp);
 		}
-		// getchar();
 	}
 
-	printf("Respostas: %d\n", tmp.size());
+	printf("Respostas: %d\n", (int)tmp.size());
 	return tmp;
+}
+
+bool Sweeper::hasHostIP(vector<Host> hosts, uint32_t ip){
+	vector<Host>::iterator it;
+	for(it = hosts.begin(); it != hosts.end(); it++){
+		if(it->ip == ip)
+			return true;
+	}
+	return false;
+}
+
+void Sweeper::arpReplyHandler(unsigned char* args, const pcap_pkthdr* header, const unsigned char* packet){
+	/* testar ser o
+	 * if(header->len < 42)
+		return;
+	*/
+	printf("PACOTE (len: %d, caplen: %d\n", header->len, header->caplen);
 }
 
 void Sweeper::hexDump(const unsigned char* buf, int iByte, int lByte){

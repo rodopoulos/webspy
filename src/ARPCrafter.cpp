@@ -92,7 +92,7 @@ void ARPCrafter::refreshContext(){
 }
 
 const char* ARPCrafter::getARPOperationName(int op){
-	switch(op){
+	switch(htons(op)){
 		case ARPOP_REPLY:
 			return "ARP_REPLY";
 			break;

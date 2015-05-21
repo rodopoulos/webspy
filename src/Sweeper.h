@@ -32,7 +32,9 @@ public:
 	virtual ~Sweeper();
 
 	std::vector<Host> sweep();
+	bool hasHostIP(std::vector<Host>, uint32_t);
 	void hexDump(const unsigned char* buf, int iByte, int lByte);
+	void arpReplyHandler(u_char *args, const struct pcap_pkthdr* header, const unsigned char* packet);
 };
 
 #endif /* SWEEPER_H_ */

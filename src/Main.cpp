@@ -6,7 +6,6 @@
  */
 
 // std-cpp
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -29,21 +28,17 @@
 using namespace std;
 
 static void showUsage(int exitCode){
-	cerr << "Usage: webspy [-v] [-l] INTERFACE BROWSER\n"
-		 << "Options:\n"
-	     << "\t-h,--help\t\tShow this help message\n"
-	     << "\t-v,--verbose\t\tEnable verbose mode\n"
-	     << "\t-l,--logging\t\tEnable logging (avaiable at ./etc)\n"
-	     << endl;
+	fprintf(stderr, "Usage: webspy [-v] [-l] [-i iface]\n");
+	fprintf(stderr, "Options:\n");
+	fprintf(stderr, "    -h,--help          Show this help message\n");
+	fprintf(stderr, "    -v,--verbose       Enable verbose mode\n");
+	fprintf(stderr, "    -l,--logging       Enable logging (avaiable at ./log)\n");
+	fprintf(stderr, "    -i,--interface     Select the network interface\n\n");
+	fprintf(stderr, "Developed by Felipe Rodopoulos, 2015\n\n");
 	exit(exitCode);
 }
 
 static void parseProgramArguments(int argc, char* argv[]){
-
-	if(argc < 0){
-		showUsage(EXIT_FAILURE);
-	}
-
 	for(int i = 1; i < argc; i++){
 		std::string arg = argv[i];
 		if(arg == "-h" || arg == "--help"){
@@ -52,16 +47,13 @@ static void parseProgramArguments(int argc, char* argv[]){
 			WebSpyGlobals::logging = true;
 		} else if(arg == "-v" || arg == "--verbose"){
 			WebSpyGlobals::verbose = true;
-		} else if(arg == "chrome" || arg == "mozilla" || arg == "safari"){
-			WebSpyGlobals::browser = argv[i];
-		} else if(arg == "lan" || arg == "wlan"){
-			WebSpyGlobals::iface = argv[i];
+		} else if(arg == "-i" || arg == "--iface"){
+			WebSpyGlobals::iface = argv[i + 1];
+			i++;
+		} else{
+			printf("Unrecognized argument: %s\n", argv[i]);
+			showUsage(EXIT_FAILURE);
 		}
-	}
-
-	if(!WebSpyGlobals::browser){
-		cout << "No browser selected\n";
-		showUsage(EXIT_FAILURE);
 	}
 }
 
@@ -117,10 +109,12 @@ static void selectInterface(){
 }
 
 int main(int argc, char* argv[]){
-	//parseProgramArguments(argc, argv);
+	parseProgramArguments(argc, argv);
 
 	if(WebSpyGlobals::iface == NULL){
 		selectInterface();
+	} else{
+
 	}
 
 	WebSpyGlobals::context = libnet_init(LIBNET_LINK_ADV, WebSpyGlobals::iface, WebSpyGlobals::libnetErrBuffer);
@@ -130,20 +124,23 @@ int main(int argc, char* argv[]){
 		exit(EXIT_FAILURE);
 	}
 
-	printf("\nInteface selected: %s\n", WebSpyGlobals::iface);
+	if(WebSpyGlobals::verbose)
+		printf("\nInteface selected: %s\n", WebSpyGlobals::iface);
 
 	WebSpyGlobals::attacker.setIP(libnet_get_ipaddr4(WebSpyGlobals::context));
 	WebSpyGlobals::attacker.setMAC(libnet_get_hwaddr(WebSpyGlobals::context));
 	WebSpyGlobals::attacker.setName(string("Attacker"));
-	printf("Your machine:\n\t");
-	WebSpyGlobals::attacker.toString();
+	if(WebSpyGlobals::verbose){
+		printf("Your machine -> ");
+		WebSpyGlobals::attacker.toString();
+	}
 
 	Sweeper sweeper;
 	vector<Host> avaiableHosts = sweeper.sweep();
 	// Host& victim = selectVictim(avaiableHosts);
 
 	/*
-	// TODO pegar IP e MAC do Gateway
+	TODO pegar IP e MAC do Gateway
 	Host gateway = Host::findGateway(iface);
 
 	Spoofer spoofer(gateway, victim);

@@ -19,6 +19,7 @@ class Sniffer {
 private:
 	pcap_t* 			pcapContext;
 	int					linkType;
+	int					linkHrdLen;
 	struct bpf_program 	filter;
 	char				pcapErrBuffer[PCAP_ERRBUF_SIZE];
 	struct pcap_pkthdr 	packet;
@@ -32,10 +33,12 @@ public:
 	Sniffer(char filter[]);
 	virtual ~Sniffer();
 
-	void showLANProps();
 
+	void setLinkHrdLen(int linkType);
 	const unsigned char* nextPacket();
+	void listen(pcap_handler filterFunction);
 	const char* getLinkName();
+	void showLANProps();
 };
 
 #endif /* SNIFFER_H_ */
