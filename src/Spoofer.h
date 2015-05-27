@@ -21,6 +21,8 @@ public:
 	virtual ~Spoofer();
 
 	void spoof();
+	static void spoofBack(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
+
 };
 
 #endif /* SPOOFER_H_ */
