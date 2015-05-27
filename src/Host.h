@@ -14,8 +14,6 @@
 #include <libnet.h>
 
 class Host {
-private:
-	static int currentID;
 public:
 	int id;
 	uint32_t ip;
@@ -31,6 +29,7 @@ public:
 	// Getters e Setters
 	void setIP(uint32_t ip);
 	void setMAC(libnet_ether_addr* mac);
+	void setMAC(uint8_t mac[]);
 	void setName(std::string name);
 	libnet_ether_addr* getMAC();
 	uint32_t getIP();

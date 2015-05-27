@@ -12,67 +12,86 @@
 
 using namespace std;
 
+vector<Host> Sweeper::avaiableHosts;
+
 // Constructors --------------------------------------------------------------
 Sweeper::Sweeper(){ }
 
 Sweeper::~Sweeper(){ }
 
 // Public --------------------------------------------------------------
-vector<Host> Sweeper::sweep(){
+vector<Host>& Sweeper::sweep(){
 	Sniffer arpSniffer("arp");
-	if(WebSpyGlobals::verbose)
+	arpSniffer.setTimeout(2000);
+	if(Globals::verbose)
 		arpSniffer.showLANProps();
 
 	uint32_t currentIp = (uint32_t)(arpSniffer.lan);
 
-	ARPCrafter arpCrafter(WebSpyGlobals::context);
-	EtherCrafter etherCrafter(WebSpyGlobals::context);
-	arpCrafter.newARP(ARPOP_REQUEST, WebSpyGlobals::attacker.mac, WebSpyGlobals::attacker.ip, EtherCrafter::zeroedMac, currentIp);
-	etherCrafter.newEther(WebSpyGlobals::attacker.mac, EtherCrafter::broadcastMac, (uint16_t)ETHERTYPE_ARP);
+	Crafter crafter(Globals::iface);
+	crafter.arp(ARPOP_REQUEST, Globals::attacker.mac->ether_addr_octet, Globals::attacker.ip, Crafter::zeroMAC, currentIp);
+	crafter.ethernet((uint16_t)ETHERTYPE_ARP, Globals::attacker.mac->ether_addr_octet, Crafter::broadcastMAC);
 
 	unsigned int i;
 	vector<Host> tmp;
 	uint32_t range = ~htonl(arpSniffer.mask);
 	printf("\nSending %u ARP Requests. Starting...\n", range);
+
 	for(i = 0; i < range; i++){
 		currentIp = ntohl((htonl(currentIp) + 1)); 		// Iterando um IP em little endian
 
-		if(currentIp != WebSpyGlobals::attacker.ip){
-			if(WebSpyGlobals::verbose)
-				printf("  Probing host on %s\n", Host::ipToString(currentIp).c_str());
+		if(currentIp != Globals::attacker.ip){
+			if(Globals::verbose)
+				printf("  Probing host on %s ...\n", Host::ipToString(currentIp).c_str());
 
-			const unsigned char* buffer;
-			libnet_write(WebSpyGlobals::context); 	  				// Send
+			crafter.send();
+			arpSniffer.listenWithTimeout(arpReplyFilter);
 
-			buffer = arpSniffer.nextPacket();
-			do{
-				ARPPacket arpReply((unsigned char*)buffer);
-				if(Host::isSameMAC(arpReply.thaddr, WebSpyGlobals::attacker.mac->ether_addr_octet)){
-					if(ntohs(arpReply.arpOp) == ARPOP_REPLY){
-						if(!hasHostIP(tmp, arpReply.spaddr)){
-							printf("  Host with MAC %s responded for IP %s!\n", Host::macToString(arpReply.shaddr).c_str(), Host::ipToString(arpReply.spaddr).c_str());
-							Host newHost(arpReply.spaddr, arpReply.shaddr, "");
-							tmp.push_back(newHost);
-						}
-					} else {
-						if(WebSpyGlobals::verbose)
-							printf("ARP frame for me, but it's not a reply\n");
-					}
-				} else {
-					//printf("ARP frame (%s), but not for me\n", ARPCrafter::getARPOperationName(arpReply.arpOp));
-					if(WebSpyGlobals::verbose)
-						printf(" timeout.\n");
-				}
-				buffer = arpSniffer.nextPacket();
-			} while(buffer);
-
-			arpCrafter.setTargetIP(currentIp);
+			crafter.arp(ARPOP_REQUEST, Globals::attacker.mac->ether_addr_octet, Globals::attacker.ip, Crafter::zeroMAC, currentIp);
 		}
 	}
 
-	int nHosts = (int)tmp.size();
+	int nHosts = avaiableHosts.size();
 	printf("%d %s found.\n", nHosts, nHosts <= 1 ? "host" : "hosts");
-	return tmp;
+	return avaiableHosts;
+}
+
+void Sweeper::arpReplyFilter(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet){
+	pcap_t* pcapContext = (pcap_t*)args;
+	Ethernet etherHeader((unsigned char*)packet);
+
+	if(htons(etherHeader.ptype) == ETHERTYPE_ARP){
+		ARP arpPacket((unsigned char*)packet);
+		if(htons(arpPacket.arpOp) == ARPOP_REPLY){
+			if(arpPacket.spaddr == Globals::gateway.ip){
+				Globals::gateway.setMAC(arpPacket.shaddr);
+				printf(
+					"  Gateway with MAC %s responded for IP %s\n",
+					Host::macToString(arpPacket.shaddr).c_str(),
+					Host::ipToString(arpPacket.spaddr).c_str()
+				);
+				pcap_breakloop(pcapContext);
+			} else if(!hasHostIP(avaiableHosts, arpPacket.spaddr)
+					&& arpPacket.spaddr != Globals::attacker.ip){
+				Host newHost(arpPacket.spaddr, arpPacket.shaddr, "");
+				avaiableHosts.push_back(newHost);
+				printf(
+					"  Host with MAC %s responded for IP %s\n",
+					Host::macToString(arpPacket.shaddr).c_str(),
+					Host::ipToString(arpPacket.spaddr).c_str()
+				);
+				pcap_breakloop(pcapContext);
+				return;
+			} else {
+				// printf("Oie Erro - Nao e pra mim\n");
+			}
+		} else{
+			// printf("Oie Erro - Nao Reply\n");
+		}
+	} else {
+		// printf("Oie Erro - Nao ARP\n");
+	}
+	usleep(1000);
 }
 
 bool Sweeper::hasHostIP(vector<Host> hosts, uint32_t ip){
@@ -82,14 +101,6 @@ bool Sweeper::hasHostIP(vector<Host> hosts, uint32_t ip){
 			return true;
 	}
 	return false;
-}
-
-void Sweeper::arpReplyHandler(unsigned char* args, const pcap_pkthdr* header, const unsigned char* packet){
-	/* testar ser o
-	 * if(header->len < 42)
-		return;
-	*/
-	printf("PACOTE (len: %d, caplen: %d\n", header->len, header->caplen);
 }
 
 void Sweeper::hexDump(const unsigned char* buf, int iByte, int lByte){

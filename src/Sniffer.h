@@ -11,7 +11,7 @@
 #include <pcap.h>
 #include <string>
 
-#include "WebSpyGlobals.h"
+#include "Globals.h"
 #include "Host.h"
 
 class Sniffer {
@@ -34,9 +34,15 @@ public:
 	virtual ~Sniffer();
 
 
-	void setLinkHrdLen(int linkType);
 	const unsigned char* nextPacket();
-	void listen(pcap_handler filterFunction);
+	void listen(pcap_handler callback);
+	void listen(pcap_handler callback, int packets);
+	void listenWithTimeout(pcap_handler callback);
+
+	void close();
+	void setLinkHrdLen(int linkType);
+	void setTimeout(int time);
+
 	const char* getLinkName();
 	void showLANProps();
 };

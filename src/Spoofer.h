@@ -11,10 +11,8 @@
 #include <libnet.h>
 #include <cstdio>
 
-#include "WebSpyGlobals.h"
-#include "Host.h"
-#include "ARPCrafter.h"
-#include "EtherCrafter.h"
+#include "Globals.h"
+#include "Crafter.h"
 
 class Spoofer {
 

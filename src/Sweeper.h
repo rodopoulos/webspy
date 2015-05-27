@@ -10,15 +10,12 @@
 
 #include <string>
 #include <vector>
-#include <cmath>
-#include <libnet.h>
-#include <pcap.h>
 
-#include "WebSpyGlobals.h"
+#include "Globals.h"
 #include "Host.h"
+#include "Crafter.h"
 #include "Sniffer.h"
-#include "ARPCrafter.h"
-#include "EtherCrafter.h"
+#include "Protocols.h"
 
 
 class Sweeper {
@@ -31,10 +28,13 @@ public:
 	Sweeper();
 	virtual ~Sweeper();
 
-	std::vector<Host> sweep();
-	bool hasHostIP(std::vector<Host>, uint32_t);
-	void hexDump(const unsigned char* buf, int iByte, int lByte);
-	void arpReplyHandler(u_char *args, const struct pcap_pkthdr* header, const unsigned char* packet);
+	static std::vector<Host> avaiableHosts;
+
+	std::vector<Host>& sweep();
+	static bool hasHostIP(std::vector<Host>, uint32_t);
+	static void arpReplyFilter(u_char *args, const struct pcap_pkthdr* header, const unsigned char* packet);
+
+	static void hexDump(const unsigned char* buf, int iByte, int lByte);
 };
 
 #endif /* SWEEPER_H_ */

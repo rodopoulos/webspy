@@ -10,23 +10,17 @@
 
 using namespace std;
 
-int Host::currentID = 0;
-
 // Constructors ------------------------------------------------------------------------
 
-Host::Host() : ip(0), mac(NULL), name("") {
-	this->id = currentID;
-	currentID++;
-}
+Host::Host() : ip(0), mac(NULL), name("") {}
 
-Host::Host(uint32_t ip, libnet_ether_addr* mac, string name) : ip(ip), mac(mac), name(name){
-	this->id = currentID;
-	currentID++;
-}
+Host::Host(uint32_t ip, libnet_ether_addr* mac, string name) : ip(ip), mac(mac), name(name) {}
 
 Host::Host(uint32_t ip, uint8_t mac[], string name){
+	// TODO checar se isto está certo
 	this->ip = ip;
-	//this->mac->ether_addr_octet = mac;
+	this->mac = (libnet_ether_addr*) malloc(sizeof(libnet_ether_addr));
+	memcpy(this->mac->ether_addr_octet, mac, 6);
 	this->name = name;
 }
 
@@ -40,6 +34,12 @@ void Host::setIP(uint32_t ip){
 
 void Host::setMAC(libnet_ether_addr* mac){
 	this->mac = mac;
+}
+
+void Host::setMAC(uint8_t mac[]){
+	// TODO checar se isto está certo
+	this->mac = (libnet_ether_addr*) malloc(sizeof(libnet_ether_addr));
+	memcpy(this->mac->ether_addr_octet, mac, 6);
 }
 
 void Host::setName(string name){
@@ -103,3 +103,4 @@ bool Host::isSameMAC(uint8_t mac1[], uint8_t mac2[]){
 	}
 	return true;
 }
+
