@@ -83,13 +83,13 @@ void Sweeper::arpReplyFilter(u_char* args, const struct pcap_pkthdr* header, con
 				pcap_breakloop(pcapContext);
 				return;
 			} else {
-				// printf("Oie Erro - Nao e pra mim\n");
+				// Nao eh pra mim
 			}
 		} else{
-			// printf("Oie Erro - Nao Reply\n");
+			// Nao eh Reply
 		}
 	} else {
-		// printf("Oie Erro - Nao ARP\n");
+		// Nao eh ARP
 	}
 	usleep(1000);
 }
