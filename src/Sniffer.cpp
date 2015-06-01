@@ -8,83 +8,101 @@
 #include "Sniffer.h"
 
 Sniffer::Sniffer() : filterExpression(NULL) {
-	if(pcap_lookupnet(Globals::iface, &this->lan, &this->mask, this->pcapErrBuffer) == PCAP_ERROR){
+	if(pcap_lookupnet(Globals::iface, &lan, &mask, pcapErrBuffer) == PCAP_ERROR){
 		fprintf(stderr,
 				"Webspy::Sweeper: [WARN] pCap warning: couldn't get interface %s netmask and IP\n",
 				this->pcapErrBuffer
 		);
-		this->mask = 0;
-		this->lan = 0;
+		mask = 0;
+		lan = 0;
 	}
 
-	this->pcapContext = pcap_open_live(Globals::iface, BUFSIZ, 1, 1000, this->pcapErrBuffer);
-	if(this->pcapContext == NULL){
+	pcapContext = pcap_open_live(Globals::iface, BUFSIZ, 1, 1000, pcapErrBuffer);
+	if(pcapContext == NULL){
 		fprintf(stderr,
 				"Webspy::Sniffer: [ERRO]pCap error: couldn't open device %s: %s\n",
 				Globals::iface,
-				this->pcapErrBuffer
+				pcapErrBuffer
 		);
 		exit(EXIT_FAILURE);
 	}
 
-	if(pcap_compile(this->pcapContext, &this->filter, "", 0, this->mask)){
+	if(pcap_setdirection(pcapContext, PCAP_D_IN) == PCAP_ERROR){
 		fprintf(stderr,
-				"Webspy::Sweeper: [ERRO] pCap error: couldn't compile filter: %s\n",
-				this->pcapErrBuffer
+			"Webspy::Sniffer::Constructor > [WARN] Pcap error: %s"
+			"can't set packet reception direction\n",
+			this->pcapErrBuffer
+		);
+	}
+
+	if(pcap_compile(pcapContext, &filter, "", 0, mask)){
+		fprintf(stderr,
+				"Webspy::Sweeper::Constructor > [ERRO] Pcap error: can't compile filter: %s\n",
+				pcapErrBuffer
 		);
 		exit(EXIT_FAILURE);
 	}
 
-	if(pcap_setfilter(this->pcapContext, &this->filter) == PCAP_ERROR){
+	if(pcap_setfilter(pcapContext, &filter) == PCAP_ERROR){
 		fprintf(stderr,
-				"Webspy::Sweeper: [ERRO] pCap error: couldn't apply filter: %s\n",
-				this->pcapErrBuffer
+				"Webspy::Sweeper::Constructor [ERRO] Pcap error: can't apply filter: %s\n",
+				pcapErrBuffer
 		);
 		exit(EXIT_FAILURE);
 	}
-	this->linkType = pcap_datalink(this->pcapContext);
+	linkType = pcap_datalink(pcapContext);
 
 	if(Globals::verbose)
 		printf("Sniffing is on with no filter...\n");
 }
 
 Sniffer::Sniffer(char filterExpression[]) : filterExpression(filterExpression){
-	if(pcap_lookupnet(Globals::iface, &this->lan, &this->mask, this->pcapErrBuffer) == PCAP_ERROR){
+	if(pcap_lookupnet(Globals::iface, &lan, &mask, pcapErrBuffer) == PCAP_ERROR){
 		fprintf(stderr,
-				"webspy::Sweeper: [WARN] pCap warning: couldn't get interface %s netmask and IP\n",
-				Globals::iface
+			"Webspy::Sweeper: [WARN] pCap warning: couldn't get interface %s netmask and IP\n",
+			Globals::iface
 		);
-		this->mask = 0;
-		this->lan = 0;
+		mask = 0;
+		lan = 0;
 	}
 
-	this->pcapContext = pcap_open_live(Globals::iface, BUFSIZ, 1, 1000, this->pcapErrBuffer);
-	if(this->pcapContext == NULL){
+	pcapContext = pcap_open_live(Globals::iface, BUFSIZ, 1, 1000, pcapErrBuffer);
+	if(pcapContext == NULL){
 		fprintf(stderr,
 				"Webspy::Sniffer: [ERRO]pCap error: couldn't open device %s: %s\n",
 				Globals::iface,
-				this->pcapErrBuffer
+				pcapErrBuffer
 		);
 		exit(EXIT_FAILURE);
 	}
 
-	if(pcap_compile(this->pcapContext, &this->filter, this->filterExpression, 0, this->mask) == PCAP_ERROR){
+	/*
+	if(pcap_setdirection(this->pcapContext, PCAP_D_IN) == PCAP_ERROR){
+		fprintf(stderr,
+			"Webspy::Sniffer::Constructor > [ERRO] Pcap error: %s"
+			"can't set packet reception direction\n",
+			this->pcapErrBuffer
+		);
+		exit(EXIT_FAILURE);
+	}
+	*/
+
+	if(pcap_compile(pcapContext, &filter, this->filterExpression, 0, mask) == PCAP_ERROR){
 		fprintf(stderr,
 				"Webspy::Sweeper: [ERRO] pCap error: couldn't compile filter: %s\n",
-				this->filterExpression
+				filterExpression
 		);
 		exit(EXIT_FAILURE);
 	}
 
-	if(pcap_setfilter(this->pcapContext, &this->filter) == PCAP_ERROR){
+	if(pcap_setfilter(pcapContext, &filter) == PCAP_ERROR){
 		fprintf(stderr,
 				"Webspy::Sweeper: [ERRO] pCap error: couldn't apply filter: %s\n",
-				this->pcapErrBuffer
+				pcapErrBuffer
 		);
 		exit(EXIT_FAILURE);
 	}
-	this->linkType = pcap_datalink(this->pcapContext);
-	//setLinkHrdLen(this->linkType);
+	linkType = pcap_datalink(pcapContext);
 
 	if(Globals::verbose)
 		printf("Sniffing with filter \"%s\" is on...\n", this->filterExpression);
@@ -92,16 +110,16 @@ Sniffer::Sniffer(char filterExpression[]) : filterExpression(filterExpression){
 
 Sniffer::~Sniffer() {
 	pcap_freecode(&this->filter);
-	pcap_close(this->pcapContext);
+	pcap_close(pcapContext);
 }
 
 void Sniffer::close(){
-	pcap_close(this->pcapContext);
+	pcap_close(pcapContext);
 }
 
 const unsigned char* Sniffer::nextPacket(){
 	const unsigned char* packet;
-	packet = pcap_next(this->pcapContext, &this->packet);
+	packet = pcap_next(pcapContext, &this->packet);
 	if(packet == NULL){
 		// fprintf(stderr, "Webspy::Sweeper::pcap [ERRO] error on getting packet\n");
 		// exit(EXIT_FAILURE);
@@ -112,7 +130,7 @@ const unsigned char* Sniffer::nextPacket(){
 }
 
 void Sniffer::listen(pcap_handler callback){
-	int listener = pcap_loop(this->pcapContext, -1, callback, (u_char*)this->pcapContext);
+	int listener = pcap_loop(pcapContext, -1, callback, (u_char*)pcapContext);
 	if(listener == PCAP_ERROR){
 		fprintf(stderr, "Webspy::Sniffer: [ERRO] pCap error: pcap_loop() error\n");
 		exit(EXIT_FAILURE);
@@ -120,7 +138,7 @@ void Sniffer::listen(pcap_handler callback){
 }
 
 void Sniffer::listen(pcap_handler callback, int packets){
-	int listener = pcap_loop(this->pcapContext, packets, callback, (u_char*)this->pcapContext);
+	int listener = pcap_loop(pcapContext, packets, callback, (u_char*)pcapContext);
 	if(listener == PCAP_ERROR){
 		fprintf(stderr, "Webspy::Sniffer: [ERRO] pCap error: pcap_loop() error\n");
 		exit(EXIT_FAILURE);
@@ -128,7 +146,7 @@ void Sniffer::listen(pcap_handler callback, int packets){
 }
 
 void Sniffer::listenWithTimeout(pcap_handler callback){
-	int listener = pcap_dispatch(this->pcapContext, -1, callback, (u_char*)this->pcapContext);
+	int listener = pcap_dispatch(pcapContext, -1, callback, (u_char*)pcapContext);
 	if(listener == PCAP_ERROR){
 		fprintf(stderr, "Webspy::Sniffer: [ERRO] pCap error: pcap_loop() error\n");
 		exit(EXIT_FAILURE);
@@ -136,7 +154,7 @@ void Sniffer::listenWithTimeout(pcap_handler callback){
 }
 
 void Sniffer::setTimeout(int time){
-	pcap_set_timeout(this->pcapContext, time);
+	pcap_set_timeout(pcapContext, time);
 }
 
 void Sniffer::showLANProps(){
