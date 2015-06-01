@@ -24,7 +24,7 @@ int Globals::readNLMsg(int sock, char* buf, int seqNum, int pid){
 	do{
 		if((readLen = recv(sock, buf, 4096 - msgLen, 0)) < 0){
 			fprintf(stderr, "WebSpy::Globals::readFromSocket > [WARN] Can't read socket.\n");
-			// return -1;
+			return -1;
 		}
 		nlHdr = (struct nlmsghdr*) buf;
 
@@ -37,8 +37,7 @@ int Globals::readNLMsg(int sock, char* buf, int seqNum, int pid){
 				fprintf(stderr, "\t->Message size:  %u\n", nlHdr->nlmsg_len);
 				fprintf(stderr, "\t->Expected size: %u\n", (int)sizeof(nlmsghdr));
 			}
-			exit(EXIT_FAILURE);
-			// return -1;
+			return -1;
 		}
 
 		if (nlHdr->nlmsg_type == NLMSG_DONE)
@@ -123,8 +122,6 @@ uint32_t Globals::getGatewayByNetstat(){
 	char gateway[16];
 	char cmd [1000] = {0x0};
 
-	printf("\n\nTENTANDO POR NETSTAT\n");
-
 	sprintf(cmd,"route -n | grep %s  | grep 'UG[ \t]' | awk '{print $2}'", iface);
 	FILE* fp = popen(cmd, "r");
 	char line[256]={0x0};
@@ -147,7 +144,6 @@ uint32_t Globals::getGatewayByNetstat(){
 void Globals::findGateway(){
 	uint32_t ip = getGatewayByNLMsg();
 	if(ip == GW_ERROR){
-		printf("\nNEM ROLOU ip: %d\n", ip);
 		ip = getGatewayByNetstat();
 		if(ip == GW_ERROR){
 			return;

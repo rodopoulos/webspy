@@ -12,6 +12,7 @@
 #include <pcap.h>
 #include <cstdio>
 #include <string>
+#include <pthread.h>
 
 #include "Globals.h"
 #include "Protocols.h"
@@ -20,13 +21,13 @@
 #include "Sniffer.h"
 
 class Spoofer {
-
+	static void* spoof(void* args);
+	static void spoofBack(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
 public:
 	Spoofer();
 	virtual ~Spoofer();
 
-	void spoof();
-	static void spoofBack(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
+	void init();
 };
 
 #endif /* SPOOFER_H_ */

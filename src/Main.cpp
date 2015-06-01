@@ -153,7 +153,7 @@ int main(int argc, char* argv[]){
 	Globals::victim.setName("Victim");
 
 	Spoofer spoofer;
-	spoofer.spoof();
+	spoofer.init();
 
 
 	/*

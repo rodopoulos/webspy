@@ -21,7 +21,8 @@ Sweeper::~Sweeper(){ }
 
 // Public --------------------------------------------------------------
 vector<Host>& Sweeper::sweep(){
-	Sniffer arpSniffer("arp");
+	char filter[] = "arp";
+	Sniffer arpSniffer(filter);
 	arpSniffer.setTimeout(5000);
 	if(Globals::verbose)
 		arpSniffer.showLANProps();

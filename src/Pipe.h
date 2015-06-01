@@ -17,14 +17,14 @@
 
 class Pipe {
 	Sniffer		sniffer;
-	Host		src, dst;
-	pthread_t*  relayThread;
+	Host&		src, dst;
+	pthread_t   thread;
 
-	void listeningPackets();
-	void relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
+	static void* listeningPackets(void* pipe);
+	static void relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
 
 public:
-	Pipe(Host src, Host dst);
+	Pipe(Host& src, Host& dst);
 	virtual ~Pipe();
 };
 
