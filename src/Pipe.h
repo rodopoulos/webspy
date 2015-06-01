@@ -8,11 +8,21 @@
 #ifndef PIPE_H_
 #define PIPE_H_
 
+#include <pcap.h>
+#include <pthread.h>
+
 #include "Host.h"
+#include "Protocols.h"
 #include "Sniffer.h"
 
 class Pipe {
-	Sniffer	sniffer;
+	Sniffer		sniffer;
+	Host		src, dst;
+	pthread_t*  relayThread;
+
+	void listeningPackets();
+	void relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
+
 public:
 	Pipe(Host src, Host dst);
 	virtual ~Pipe();
