@@ -117,6 +117,28 @@ void Sniffer::close(){
 	pcap_close(pcapContext);
 }
 
+void Sniffer::setFilter(const char* filterExp){
+	if(pcap_compile(pcapContext, &filter, filterExp, 0, mask)){
+		fprintf(stderr,
+			"Webspy::Sweeper::setFilter > [ERRO] Pcap error: can't compile filter: %s\n",
+			pcapErrBuffer
+		);
+		exit(EXIT_FAILURE);
+	}
+
+	if(pcap_setfilter(pcapContext, &filter) == PCAP_ERROR){
+		fprintf(stderr,
+			"Webspy::Sweeper::setFilter [ERRO] Pcap error: can't apply filter: %s\n",
+			pcapErrBuffer
+		);
+		exit(EXIT_FAILURE);
+	}
+}
+
+void Sniffer::setDirection(pcap_direction_t direction){
+	pcap_setdirection(pcapContext, direction);
+}
+
 const unsigned char* Sniffer::nextPacket(){
 	const unsigned char* packet;
 	packet = pcap_next(pcapContext, &this->packet);

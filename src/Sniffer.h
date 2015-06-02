@@ -40,8 +40,10 @@ public:
 	void listenWithTimeout(pcap_handler callback);
 
 	void close();
+	void setFilter(const char* filter);
 	void setLinkHrdLen(int linkType);
 	void setTimeout(int time);
+	void setDirection(pcap_direction_t direction);
 
 	const char* getLinkName();
 	void showLANProps();

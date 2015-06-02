@@ -24,6 +24,7 @@
 #include "Globals.h"
 #include "Sweeper.h"
 #include "Host.h"
+#include "Pipe.h"
 #include "Spoofer.h"
 
 using namespace std;
@@ -156,8 +157,8 @@ int main(int argc, char* argv[]){
 	spoofer.init();
 
 
+	Pipe gateway2victim(Globals::gateway, Globals::victim);
 	/*
-	Pipe gateway2victim(gateway, victim);
 	Pipe victim2gateway(victim, gateway);
 
 	while(true){
