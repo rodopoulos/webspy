@@ -132,7 +132,6 @@ int main(int argc, char* argv[]){
 	Globals::findAttacker();
 	Globals::findGateway();
 
-
 	if(Globals::verbose){
 		printf("Your machine -> ");
 		Globals::attacker.toString();
@@ -146,16 +145,16 @@ int main(int argc, char* argv[]){
 	}
 
 	if(!Globals::gateway.ip){
-		printf("Gateway host could not be found, select one below:\n\n");
+		printf("Gateway could not be found, select one below:\n\n");
 		Globals::gateway = selectVictim(avaiableHosts);
 		Globals::gateway.setName("Gateway");
 	}
+
 	Globals::victim = selectVictim(avaiableHosts);
 	Globals::victim.setName("Victim");
 
 	Spoofer spoofer;
 	spoofer.init();
-
 
 	Pipe gateway2victim(Globals::gateway, Globals::victim);
 	/*

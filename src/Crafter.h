@@ -25,7 +25,7 @@ class Crafter {
 	char							errorBuffer[LIBNET_ERRBUF_SIZE];
 	std::map<int, libnet_ptag_t>	protocols;
 
-	void error();
+	void error(char* method);
 
 public:
 	static uint8_t broadcastMAC[6];

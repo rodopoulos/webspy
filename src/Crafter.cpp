@@ -13,14 +13,14 @@ uint8_t Crafter::zeroMAC[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 Crafter::Crafter() {
 	this->context = libnet_init(LIBNET_LINK_ADV, NULL, this->errorBuffer);
 	if(!this->context){
-		error();
+		error("Constructor");
 	}
 }
 
 Crafter::Crafter(const char* iface){
 	this->context = libnet_init(LIBNET_LINK_ADV, iface, this->errorBuffer);
 	if(!this->context){
-		error();
+		error("Constructor");
 	}
 }
 
@@ -32,7 +32,7 @@ Crafter::~Crafter() {
 void Crafter::send(){
 	int response = libnet_write(this->context);
 	if(response == LIBNET_ERROR){
-		error();
+		error("send");
 	}
 }
 
@@ -44,8 +44,8 @@ void Crafter::close(){
 	libnet_destroy(this->context);
 }
 
-void Crafter::error(){
-	fprintf(stderr, "Webspy::Crafter::libnet > [ERROR] %s", libnet_geterror(this->context));
+void Crafter::error(char* method){
+	fprintf(stderr, "Webspy::Crafter::%s > [ERROR] Libnet Error: %s", method, libnet_geterror(this->context));
 	exit(EXIT_FAILURE);
 }
 
@@ -59,7 +59,7 @@ void Crafter::arp(uint16_t op, uint8_t sha[], uint32_t spa, uint8_t tha[], uint3
 			this->context
 		);
 		if(newTag == LIBNET_ERROR){
-			error();
+			error("arp");
 		} else {
 			this->protocols[CRAFTER_ARP] = newTag;
 		}
@@ -81,12 +81,12 @@ void Crafter::ethernet(uint16_t op, uint8_t smac[], uint8_t tmac[]){
 	if(tag == this->protocols.end()){
 		libnet_ptag_t newTag = libnet_build_ethernet(tmac, smac, op, NULL, 0, this->context, 0);
 		if(newTag == LIBNET_ERROR){
-			error();
+			error("ethernet");
 		} else {
 			this->protocols[CRAFTER_ETHERNET] = newTag;
 		}
 	} else{
 		if(libnet_build_ethernet(tmac, smac, op, NULL, 0, this->context, tag->second) == LIBNET_ERROR)
-			error();
+			error("ethernet");
 	}
 }

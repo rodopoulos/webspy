@@ -103,7 +103,6 @@ uint32_t Globals::getGatewayByNLMsg(){
 		int rtAttrLen = RTM_PAYLOAD(nlMsg);
 
 		for(; RTA_OK(rtAttr, rtAttrLen); RTA_NEXT(rtAttr, rtAttrLen)){
-			printf("Estou olhando para %d \n", rtAttr->rta_type);
 			if(rtAttr->rta_type == RTA_GATEWAY){
 				printf("\tACHEI\n");
 				close(sock);

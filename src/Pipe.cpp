@@ -8,8 +8,10 @@
 #include "Pipe.h"
 
 Pipe::Pipe(Host& src, Host& dst) : src(src), dst(dst) {
+	printf("Criando um Pipe\n");
 	char filter[] = "tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)";
 	sniffer.setFilter(filter);
+
 	if(pthread_create(&thread, NULL, listeningPackets, &sniffer)){
 		printf("Webspy::Pipe::Constructor > [ERRO] can't init relay thread\n");
 		exit(EXIT_FAILURE);
@@ -21,7 +23,7 @@ Pipe::~Pipe() {
 }
 
 void* Pipe::listeningPackets(void* args){
-	Sniffer* sniffer = (Sniffer&) args;
+	Sniffer* sniffer = (Sniffer*) args;
 	sniffer->listen(relay);
 }
 
