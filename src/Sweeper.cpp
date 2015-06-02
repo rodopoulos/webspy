@@ -36,7 +36,7 @@ vector<Host>& Sweeper::sweep(){
 	unsigned int i;
 	vector<Host> tmp;
 	uint32_t range = ~htonl(arpSniffer.mask);
-	printf("\nSending %u ARP Requests. Starting...\n", range);
+	printf("ARP Sweep: sending %u ARP Requests...\n", range);
 
 	for(i = 0; i < range; i++){
 		currentIp = ntohl((htonl(currentIp) + 1)); 		// Iterando um IP em little endian
@@ -66,21 +66,25 @@ void Sweeper::arpReplyFilter(u_char* args, const struct pcap_pkthdr* header, con
 		if(htons(arpPacket.arpOp) == ARPOP_REPLY){
 			if(arpPacket.spaddr == Globals::gateway.ip){
 				Globals::gateway.setMAC(arpPacket.shaddr);
-				printf(
-					"  Gateway with MAC %s responded for IP %s\n",
-					Host::macToString(arpPacket.shaddr).c_str(),
-					Host::ipToString(arpPacket.spaddr).c_str()
-				);
+				if(Globals::verbose){
+					printf(
+						"  Gateway with MAC %s responded for IP %s\n",
+						Host::macToString(arpPacket.shaddr).c_str(),
+						Host::ipToString(arpPacket.spaddr).c_str()
+					);
+				}
 				pcap_breakloop(pcapContext);
 			} else if(!hasHostIP(avaiableHosts, arpPacket.spaddr)
 					&& arpPacket.spaddr != Globals::attacker.ip){
 				Host newHost(arpPacket.spaddr, arpPacket.shaddr, "");
 				avaiableHosts.push_back(newHost);
-				printf(
-					"  Host with MAC %s responded for IP %s\n",
-					Host::macToString(arpPacket.shaddr).c_str(),
-					Host::ipToString(arpPacket.spaddr).c_str()
-				);
+				if(Globals::verbose){
+					printf(
+						"  Host with MAC %s responded for IP %s\n",
+						Host::macToString(arpPacket.shaddr).c_str(),
+						Host::ipToString(arpPacket.spaddr).c_str()
+					);
+				}
 				pcap_breakloop(pcapContext);
 				return;
 			} else {

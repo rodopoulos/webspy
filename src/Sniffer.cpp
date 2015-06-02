@@ -30,10 +30,8 @@ Sniffer::Sniffer() {
 		exit(EXIT_FAILURE);
 	}
 
-	int dirResp = pcap_setdirection(handle, PCAP_D_IN);
-	printf("A resposta foi: %d\n", dirResp);
-	getchar();
-	getchar();
+	pcap_setdirection(handle, PCAP_D_IN);
+	// TODO Ver como fazer para lidar com esta diretiva da Pcap
 	/* if(pcap_setdirection(handle, PCAP_D_IN)){
 		fprintf(stderr,
 			"Webspy::Sniffer::Constructor > "
@@ -126,8 +124,10 @@ void Sniffer::setFilter(const char* filterExp){
 	if(pcap_compile(handle, &filter, filterExp, 0, mask)){
 		fprintf(stderr,
 			"Webspy::Sniffer::setFilter > "
-			"[ERRO] Pcap error: can't compile filter: %s\n",
-			errBuf
+			"[ERRO] can't compile filter\n"
+			"    > Filter expression: %s\n"
+			"    > Pcap error: %s",
+			filterExp, pcap_geterr(handle)
 		);
 		exit(EXIT_FAILURE);
 	}
@@ -136,7 +136,7 @@ void Sniffer::setFilter(const char* filterExp){
 		fprintf(stderr,
 			"Webspy::Sniffer::setFilter > "
 			"[ERRO] Pcap error: can't apply filter: %s\n",
-			errBuf
+			pcap_geterr(handle)
 		);
 		exit(EXIT_FAILURE);
 	}
