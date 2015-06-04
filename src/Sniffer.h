@@ -43,11 +43,11 @@ public:
 	/* ================== Listeners ================== */
 	const unsigned char* nextPacket();
 	void listen(pcap_handler callback);
-	void listen(pcap_handler callback, int packets);
-	void listenWithTimeout(pcap_handler callback);
+	void listen(pcap_handler callback, u_char* args);
 
 	/* ================== Modifiers ================== */
 	void init();
+	void breakLoop();
 	void close();
 
 	/* =================== Setters =================== */

@@ -15,6 +15,12 @@
 #include "Protocols.h"
 #include "Sniffer.h"
 
+struct pipeListenerArgs{
+	Host* 	 src;
+	Host* 	 dst;
+	Sniffer* sniffer;
+};
+
 class Pipe {
 	Sniffer		sniffer;
 	Host&		src, dst;

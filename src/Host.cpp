@@ -56,9 +56,13 @@ uint32_t Host::getIP(){
 
 // Utils --------------------------------------------------------------------------------
 void Host::toString(){
-	printf("[HOST] IP: %s | MAC: %s", ipToString(this->ip).c_str(), macToString(this->mac).c_str());
+	printf(
+		"[HOST] IP: %s | MAC: %s",
+		ipToString(this->ip).c_str(),
+		mac ? macToString(this->mac).c_str() : "<NULL>"
+	);
 	if(this->name != "")
-		printf(" with name %s\n", this->name.c_str());
+		printf(" | Name/Vendor: %s\n", this->name.c_str());
 	else
 		printf("\n");
 }
@@ -66,12 +70,12 @@ void Host::toString(){
 std::string Host::macToString(libnet_ether_addr* mac){
 	char tmp[18];
 	sprintf(tmp, "%2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x",
-			mac->ether_addr_octet[0],
-			mac->ether_addr_octet[1],
-			mac->ether_addr_octet[2],
-			mac->ether_addr_octet[3],
-			mac->ether_addr_octet[4],
-			mac->ether_addr_octet[5]
+		mac->ether_addr_octet[0],
+		mac->ether_addr_octet[1],
+		mac->ether_addr_octet[2],
+		mac->ether_addr_octet[3],
+		mac->ether_addr_octet[4],
+		mac->ether_addr_octet[5]
 	);
 	return string(tmp);
 }
@@ -87,10 +91,10 @@ std::string Host::macToString(uint8_t mac[]){
 std::string Host::ipToString(uint32_t ip){
 	char tmp[16];
 	sprintf(tmp, "%d.%d.%d.%d",
-			int(((uint8_t*)&ip)[0]),
-			int(((uint8_t*)&ip)[1]),
-			int(((uint8_t*)&ip)[2]),
-			int(((uint8_t*)&ip)[3])
+		int(((uint8_t*)&ip)[0]),
+		int(((uint8_t*)&ip)[1]),
+		int(((uint8_t*)&ip)[2]),
+		int(((uint8_t*)&ip)[3])
 	);
 	return string(tmp);
 }
@@ -104,3 +108,20 @@ bool Host::isSameMAC(uint8_t mac1[], uint8_t mac2[]){
 	return true;
 }
 
+char* Host::getMACVendor(uint8_t mac[]){
+	/*char tmac[6];
+	int i = 0;
+
+	/* sprintf(tmac, "%02x%02x%02x", mac[0], mac[1], mac[2]);
+
+	/* Convert mac prefix to upper
+	for (i=0; i<6; i++)
+		tmac[i] = toupper(tmac[i]);
+
+	for (i=0; i<8436; i++){
+		if (strcmp(oui_table[i].prefix, tmac) == 0)
+			return oui_table[i].vendor;
+	} */
+
+	return "Unknown vendor";
+}

@@ -2,7 +2,7 @@
  * Host.h
  *
  *  Created on: 15/04/2015
- *      Author: root
+ *      Author: Felipe Rodopoulos
  */
 
 #ifndef HOST_H_
@@ -37,11 +37,11 @@ public:
 
 	// Utils
 	void toString();
+	static char* getMACVendor(uint8_t mac[]);
 	static std::string macToString(libnet_ether_addr* mac);
 	static std::string macToString(uint8_t mac[]);
 	static std::string ipToString(uint32_t ip);
 	static bool isSameMAC(uint8_t mac1[], uint8_t mac2[]);
-
 };
 
 #endif /* HOST_H_ */

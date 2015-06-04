@@ -11,6 +11,7 @@
  * * * * * * * * Constructors and Destructor * * * * * * * * * * * * * **
  ************************************************************************/
 Sniffer::Sniffer() {
+	getLANProps();
 	handle = pcap_create(Globals::iface, errBuf);
 	if(handle == NULL){
 		fprintf(stderr,
@@ -109,6 +110,10 @@ void Sniffer::init(){
 }
 
 
+void Sniffer::breakLoop(){
+	pcap_breakloop(handle);
+}
+
 void Sniffer::close(){
 	pcap_freecode(&filter);
 	pcap_close(handle);
@@ -126,7 +131,7 @@ void Sniffer::setFilter(const char* filterExp){
 			"Webspy::Sniffer::setFilter > "
 			"[ERRO] can't compile filter\n"
 			"    > Filter expression: %s\n"
-			"    > Pcap error: %s",
+			"    > Pcap error: %s\n",
 			filterExp, pcap_geterr(handle)
 		);
 		exit(EXIT_FAILURE);
@@ -183,22 +188,15 @@ void Sniffer::listen(pcap_handler callback){
 	}
 }
 
-void Sniffer::listen(pcap_handler callback, int packets){
-	int listener = pcap_loop(handle, packets, callback, (u_char*)handle);
+
+void Sniffer::listen(pcap_handler callback, u_char* args){
+	int listener = pcap_loop(handle, -1, callback, args);
 	if(listener == PCAP_ERROR){
 		fprintf(stderr,
 			"Webspy::Sniffer::listen > "
-			"[ERRO] pCap error: pcap_loop() error\n");
-		exit(EXIT_FAILURE);
-	}
-}
-
-void Sniffer::listenWithTimeout(pcap_handler callback){
-	int listener = pcap_dispatch(handle, -1, callback, (u_char*)handle);
-	if(listener == PCAP_ERROR){
-		fprintf(stderr,
-			"Webspy::Sniffer::listenWithTimeout > "
-			"[ERRO] pCap error: pcap_loop() error\n");
+			"[ERRO] pCap error: pcap_loop() error: %s\n",
+			errBuf
+		);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -224,9 +222,9 @@ void Sniffer::getLANProps(){
 
 void Sniffer::showLANProps(){
 	printf("LAN Config:\n");
-	printf("    IP Space: %s\n", Host::ipToString((uint32_t)this->lan).c_str());
-	printf("    Mask: %s\n", Host::ipToString((this->mask)).c_str());
-	printf("    Link type: %s\n", this->getLinkName());
+	printf("    IP Space: %s\n", Host::ipToString((uint32_t)lan).c_str());
+	printf("    Mask: %s\n", Host::ipToString((mask)).c_str());
+	printf("    Link type: %s\n", getLinkName());
 }
 
 const char* Sniffer::getLinkName(){

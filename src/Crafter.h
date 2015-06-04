@@ -25,7 +25,7 @@ class Crafter {
 	char							errorBuffer[LIBNET_ERRBUF_SIZE];
 	std::map<int, libnet_ptag_t>	protocols;
 
-	void error(char* method);
+	void error(const char* method);
 
 public:
 	static uint8_t broadcastMAC[6];
@@ -39,10 +39,11 @@ public:
 	void clear();
 	void close();
 
+	uint32_t getSize();
+
 	void arp(uint16_t op, uint8_t smac[], uint32_t sip, uint8_t tmac[], uint32_t tip);
 	void ethernet(uint16_t op, uint8_t smac[], uint8_t tmac[]);
 	// void ip();
-
 };
 
 #endif /* SRC_CRAFTER_H_ */

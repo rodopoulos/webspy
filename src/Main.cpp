@@ -149,6 +149,9 @@ int main(int argc, char* argv[]){
 		Globals::gateway = selectVictim(avaiableHosts);
 		Globals::gateway.setName("Gateway");
 	}
+	if(!Globals::gateway.mac){
+		Sweeper::getGatewayMAC();
+	}
 
 	Globals::victim = selectVictim(avaiableHosts);
 	Globals::victim.setName("Victim");

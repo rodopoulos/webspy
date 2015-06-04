@@ -23,6 +23,7 @@
 class Spoofer {
 	static void* spoof(void* args);
 	static void spoofBack(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
+
 public:
 	Spoofer();
 	virtual ~Spoofer();
