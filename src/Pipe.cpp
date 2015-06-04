@@ -12,6 +12,8 @@ Pipe::Pipe(Host& src, Host& dst) : src(src), dst(dst) {
 	sniffer.init();
 	sniffer.setFilter(filter);
 
+	// Se eu uso sniffer.listen() funciona normal
+
 	pipeListenerArgs args;
 	args.src = &src;
 	args.dst = &dst;
@@ -28,6 +30,7 @@ Pipe::~Pipe() { }
 void* Pipe::listeningPackets(void* args){
 	pipeListenerArgs* arguments = (pipeListenerArgs*) args;
 	printf("  listeningPackets: ponteiro castado, vou chamar o metodo listen\n");
+	// usando este tipo de passagem, não funciona, dá seg fault
 	arguments->sniffer->listen(relay, (u_char*)args);
 	return NULL;
 }
