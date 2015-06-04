@@ -14,10 +14,10 @@ Pipe::Pipe(Host& src, Host& dst) : src(src), dst(dst) {
 
 	// Se eu uso sniffer.listen() funciona normal
 
-	pipeListenerArgs args;
-	args.src = &src;
-	args.dst = &dst;
-	args.sniffer = &sniffer;
+	pipeListenerArgs *args = new pipeListenerArgs;
+	args->src = &src;
+	args->dst = &dst;
+	args->sniffer = &sniffer;
 
 	if(pthread_create(&thread, NULL, listeningPackets, &args)){
 		printf("Webspy::Pipe::Constructor > [ERRO] can't init relay thread\n");
@@ -32,7 +32,8 @@ void* Pipe::listeningPackets(void* args){
 	printf("  listeningPackets: ponteiro castado, vou chamar o metodo listen\n");
 	// usando este tipo de passagem, não funciona, dá seg fault
 	arguments->sniffer->listen(relay, (u_char*)args);
-	return NULL;
+	delete arguments;
+	return nullptr;
 }
 
 void Pipe::relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet){
