@@ -191,6 +191,7 @@ void Sniffer::listen(pcap_handler callback){
 
 void Sniffer::listen(pcap_handler callback, u_char* args){
 	int listener = pcap_loop(handle, -1, callback, args);
+	printf("To na funcao listen\n");
 	if(listener == PCAP_ERROR){
 		fprintf(stderr,
 			"Webspy::Sniffer::listen > "
@@ -228,7 +229,7 @@ void Sniffer::showLANProps(){
 }
 
 const char* Sniffer::getLinkName(){
-	switch(this->linkType){
+	switch(pcap_datalink(handle)){
 		case DLT_EN10MB:
 			return "Ethernet";
 			break;

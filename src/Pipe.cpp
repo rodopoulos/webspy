@@ -19,7 +19,7 @@ Pipe::Pipe(Host& src, Host& dst) : src(src), dst(dst) {
 	args->dst = &dst;
 	args->sniffer = &sniffer;
 
-	if(pthread_create(&thread, NULL, listeningPackets, &args)){
+	if(pthread_create(&thread, NULL, listeningPackets, args)){
 		printf("Webspy::Pipe::Constructor > [ERRO] can't init relay thread\n");
 		exit(EXIT_FAILURE);
 	}
