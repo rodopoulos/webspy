@@ -144,13 +144,10 @@ int main(int argc, char* argv[]){
 		exit(EXIT_SUCCESS);
 	}
 
-	if(!Globals::gateway.ip){
+	if(!Globals::gateway.ip || !Globals::gateway.mac){
 		printf("Gateway could not be found, select one below:\n\n");
 		Globals::gateway = selectVictim(avaiableHosts);
 		Globals::gateway.setName("Gateway");
-	}
-	if(!Globals::gateway.mac){
-		Sweeper::getGatewayMAC();
 	}
 
 	Globals::victim = selectVictim(avaiableHosts);
@@ -160,7 +157,10 @@ int main(int argc, char* argv[]){
 	spoofer.init();
 
 	Pipe gateway2victim(Globals::gateway, Globals::victim);
-
+	gateway2victim.init();
+	printf("Pipe 1 concluido\n");
+	getchar();
+	getchar();
 	/*
 	Pipe victim2gateway(victim, gateway);
 

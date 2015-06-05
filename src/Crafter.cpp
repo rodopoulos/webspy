@@ -13,12 +13,7 @@ uint8_t Crafter::zeroMAC[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 /************************************************************************
  * * * * * * * * CONSTRUCTORS * * * * * * * * * * * * * * * * * * * * * *
  ************************************************************************/
-Crafter::Crafter() {
-	context = libnet_init(LIBNET_LINK_ADV, NULL, errorBuffer);
-	if(context == NULL){
-		error(__func__);
-	}
-}
+Crafter::Crafter() {}
 
 Crafter::Crafter(const char* iface){
 	context = libnet_init(LIBNET_LINK_ADV, iface, errorBuffer);
@@ -39,6 +34,13 @@ Crafter::~Crafter() {
 /************************************************************************
  * * * * * * * * ACTIONS * * * * * * * * * * * * * * * * * * * * * * * **
  ************************************************************************/
+void Crafter::init(const char* iface){
+	context = libnet_init(LIBNET_LINK_ADV, iface, errorBuffer);
+	if(context == NULL){
+		error(__func__);
+	}
+}
+
 void Crafter::send(){
 	int response = libnet_write(context);
 	if(response == LIBNET_ERROR){

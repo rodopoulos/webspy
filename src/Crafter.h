@@ -18,6 +18,7 @@
 #define CRAFTER_DNS			6
 
 #include <libnet.h>
+#include "Globals.h"
 #include <map>
 
 class Crafter {
@@ -35,6 +36,7 @@ public:
 	Crafter(const char* iface);
 	virtual ~Crafter();
 
+	void init(const char* iface);
 	void send();
 	void clear();
 	void close();

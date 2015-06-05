@@ -13,13 +13,19 @@
 using namespace std;
 
 vector<Host> Sweeper::avaiableHosts;
+Crafter Sweeper::crafter(Globals::iface);
 
-// Constructors --------------------------------------------------------------
-Sweeper::Sweeper(){ }
+/************************************************************************
+ * * * * * * * * CONSTRUCTORS * * * * * * * * * * * * * * * * * * * * * *
+ ************************************************************************/
+Sweeper::Sweeper(){}
 
 Sweeper::~Sweeper(){ }
 
-// Public --------------------------------------------------------------
+
+/************************************************************************
+ * * * * * * * * ACTIONS * * * * * * * * * * * * * * * * * * * * * * * **
+ ************************************************************************/
 vector<Host>& Sweeper::sweep(){
 	char filter[] = "arp";
 	Sniffer arpSniffer(filter);
@@ -45,37 +51,43 @@ vector<Host>& Sweeper::sweep(){
 	return avaiableHosts;
 }
 
+void Sweeper::sendARPRequest(uint32_t ip){
+	crafter.arp(ARPOP_REQUEST, Globals::attacker.mac->ether_addr_octet, Globals::attacker.ip, Crafter::zeroMAC, ip);
+	crafter.ethernet((uint16_t)ETHERTYPE_ARP, Globals::attacker.mac->ether_addr_octet, Crafter::broadcastMAC);
+	crafter.send();
+}
+
 void* Sweeper::sendProbes(void* args){
 	probingArgs *arguments = (probingArgs*) args;
-
-	Crafter crafter(Globals::iface);
-	crafter.arp(ARPOP_REQUEST, Globals::attacker.mac->ether_addr_octet, Globals::attacker.ip, Crafter::zeroMAC, arguments->initial);
-	crafter.ethernet((uint16_t)ETHERTYPE_ARP, Globals::attacker.mac->ether_addr_octet, Crafter::broadcastMAC);
 
 	printf("ARP Sweep: sending %u ARP Requests...\n", arguments->range);
 	uint32_t i;
 	uint32_t initial = htonl(arguments->initial);
+
 	for(i = 0; i < arguments->range; i++){
 		uint32_t curr = ntohl(initial + i);
 		if(curr != Globals::attacker.ip){
-
 			if(Globals::verbose)
 				printf("  Probing host on %s ...\n", Host::ipToString(curr).c_str());
-
-			crafter.send();
-			crafter.arp(
-				ARPOP_REQUEST,
-				Globals::attacker.mac->ether_addr_octet,
-				Globals::attacker.ip,
-				Crafter::zeroMAC,
-				curr
-			);
+			sendARPRequest(curr);
 		}
 	}
-	sleep(5);
+
+	sleep(8);
+	int count = 0;
+	if(Globals::gateway.ip){
+		while(Globals::gateway.mac == NULL && count < 5){
+			printf("Sem MAC do gateway... aguardando.\n");
+			sendARPRequest(Globals::gateway.ip);
+			sleep(1);
+			count++;
+		}
+	}
+
 	arguments->sniffer->breakLoop();
 	return NULL;
 }
+
 
 void Sweeper::arpReplyFilter(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet){
 	Ethernet etherHeader((unsigned char*)packet);
@@ -111,6 +123,13 @@ void Sweeper::arpReplyFilter(u_char* args, const struct pcap_pkthdr* header, con
 	} // else -> não é ARP
 }
 
+
+
+
+
+/************************************************************************
+ * * * * * * * * UTILS * * * * * * * * * * * * * * * * * * * * * * * * **
+ ************************************************************************/
 bool Sweeper::hasHostIP(vector<Host> hosts, uint32_t ip){
 	vector<Host>::iterator it;
 	for(it = hosts.begin(); it != hosts.end(); it++){
@@ -119,6 +138,7 @@ bool Sweeper::hasHostIP(vector<Host> hosts, uint32_t ip){
 	}
 	return false;
 }
+
 
 void Sweeper::hexDump(const unsigned char* buf, int iByte, int lByte){
 	int i, j = 1;
@@ -134,14 +154,3 @@ void Sweeper::hexDump(const unsigned char* buf, int iByte, int lByte){
 	printf("\n\n");
 }
 
-void Sweeper::getGatewayMAC(){
-	printf("MAC do gateway nao foi achado, vou buscar\n");
-	Crafter crafter(Globals::iface);
-	crafter.arp(ARPOP_REQUEST, Globals::attacker.mac->ether_addr_octet, Globals::attacker.ip, Crafter::zeroMAC, Globals::gateway.ip);
-	crafter.ethernet((uint16_t)ETHERTYPE_ARP, Globals::attacker.mac->ether_addr_octet, Crafter::broadcastMAC);
-
-	char filter[] = "arp";
-	Sniffer arpSniffer(filter);
-	crafter.send();
-	arpSniffer.listen(arpReplyFilter);
-}

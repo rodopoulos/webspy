@@ -22,16 +22,16 @@ struct pipeListenerArgs{
 };
 
 class Pipe {
-	Sniffer		sniffer;
 	Host&		src, dst;
 	pthread_t   thread;
 
-	static void* listeningPackets(void* pipe);
+	static void* connect(void* args);
 	static void relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
 
 public:
 	Pipe(Host& src, Host& dst);
 	virtual ~Pipe();
+	void init();
 };
 
 #endif /* PIPE_H_ */

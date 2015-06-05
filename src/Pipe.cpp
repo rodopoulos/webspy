@@ -7,39 +7,35 @@
 
 #include "Pipe.h"
 
-Pipe::Pipe(Host& src, Host& dst) : src(src), dst(dst) {
-	char filter[] = "tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)";
-	sniffer.init();
-	sniffer.setFilter(filter);
+Pipe::Pipe(Host& src, Host& dst) : src(src), dst(dst) {}
 
-	// Se eu uso sniffer.listen() funciona normal
+Pipe::~Pipe() { }
 
+void Pipe::init(){
+	pthread_t thread;
 	pipeListenerArgs *args = new pipeListenerArgs;
 	args->src = &src;
 	args->dst = &dst;
-	args->sniffer = &sniffer;
+	args->sniffer = nullptr;
 
-	if(pthread_create(&thread, NULL, listeningPackets, args)){
-		printf("Webspy::Pipe::Constructor > [ERRO] can't init relay thread\n");
+	if(pthread_create(&thread, NULL, connect, args) < 0){
+		printf("Webspy::Pipe::init > [ERRO] can't init relay thread\n");
 		exit(EXIT_FAILURE);
 	}
 }
 
-Pipe::~Pipe() { }
-
-void* Pipe::listeningPackets(void* args){
-	pipeListenerArgs* arguments = (pipeListenerArgs*) args;
-	printf("  listeningPackets: ponteiro castado, vou chamar o metodo listen\n");
-	// usando este tipo de passagem, não funciona, dá seg fault
-	arguments->sniffer->listen(relay, (u_char*)args);
-	delete arguments;
+void* Pipe::connect(void* arguments){
+	char filter[] = "tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)";
+	Sniffer sniffer(filter);
+	printf("Sniffer on Pipe is settled\n");
+	sniffer.listen(relay, (u_char*)arguments);
 	return nullptr;
 }
 
 void Pipe::relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet){
-	printf("    relay: entrei na funcao\n");
 	pipeListenerArgs* arguments = (pipeListenerArgs*) args;
 
+	printf("Argumentos\n  Src: %s\n  Dst: %s\n");
 	Ethernet ether((unsigned char*) packet);
 	printf(
 		"Pacote Ether tipo %s de %s para %s\n",

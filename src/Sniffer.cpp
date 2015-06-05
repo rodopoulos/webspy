@@ -190,6 +190,7 @@ void Sniffer::listen(pcap_handler callback){
 
 
 void Sniffer::listen(pcap_handler callback, u_char* args){
+	printf("To na funcao listen\n");
 	int listener = pcap_loop(handle, -1, callback, args);
 	printf("To na funcao listen\n");
 	if(listener == PCAP_ERROR){
