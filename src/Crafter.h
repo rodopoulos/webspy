@@ -42,6 +42,8 @@ public:
 	void close();
 
 	uint32_t getSize();
+	uint32_t getInterfaceIP();
+	libnet_ether_addr* getInterfaceMAC();
 
 	void arp(uint16_t op, uint8_t smac[], uint32_t sip, uint8_t tmac[], uint32_t tip);
 	void ethernet(uint16_t op, uint8_t smac[], uint8_t tmac[]);

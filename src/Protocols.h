@@ -34,5 +34,37 @@ struct Ethernet{
 	const char* getTypeName();
 };
 
+struct IP{
+	uint8_t	 version:4, hl:4;
+	uint8_t  tos;
+	uint16_t len;
+	uint16_t id;
+	uint16_t off;
+	uint8_t  ttl;
+	uint8_t  protocol;
+	uint16_t checksum;
+	uint32_t src;
+	uint32_t dst;
+};
+
+struct TCP{
+	uint16_t srcport;
+	uint16_t dstport;
+	uint32_t seqid;
+	uint32_t ackid;
+	uint8_t offset:4, rsvd:4;
+	uint8_t cwr:1, ece:1, urg:1, ack:1, psh:1, syn:1, fin:1;
+	uint16_t window;
+	uint16_t checksum;
+	uint16_t urgptr;
+};
+
+struct HTML{
+	uint8_t	method;
+	uint8_t ver;
+	uint8_t datatype;
+	char* url;
+};
+
 
 #endif /* PROTOCOLS_H_ */

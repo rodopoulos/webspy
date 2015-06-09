@@ -112,9 +112,9 @@ char* Host::getMACVendor(uint8_t mac[]){
 	/*char tmac[6];
 	int i = 0;
 
-	/* sprintf(tmac, "%02x%02x%02x", mac[0], mac[1], mac[2]);
+	sprintf(tmac, "%02x%02x%02x", mac[0], mac[1], mac[2]);
 
-	/* Convert mac prefix to upper
+	Convert mac prefix to upper
 	for (i=0; i<6; i++)
 		tmac[i] = toupper(tmac[i]);
 
@@ -123,5 +123,6 @@ char* Host::getMACVendor(uint8_t mac[]){
 			return oui_table[i].vendor;
 	} */
 
-	return "Unknown vendor";
+	char* str = "Unknown vendor";
+	return str;
 }

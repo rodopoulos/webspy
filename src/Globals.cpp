@@ -166,8 +166,28 @@ void Globals::findAttacker(){
 		);
 		exit(EXIT_FAILURE);
 	}
+	uint32_t myip;
+	libnet_ether_addr *mymac;
+	if((myip = libnet_get_ipaddr4(context)) == (unsigned)-1){
+		fprintf(stderr,
+				"Webspy::Globals::findAttacker > "
+				"[ERROR] can't get attacker IP: %s\n",
+				libnet_geterror(context)
+		);
+		exit(EXIT_FAILURE);
+	}
+	if((mymac = libnet_get_hwaddr(context)) == NULL){
+		fprintf(stderr,
+				"Webspy::Globals::findAttacker > "
+				"[ERROR] can't get attacker MAC: %s\n",
+				libnet_geterror(context)
+		);
+		exit(EXIT_FAILURE);
+	}
+
 	attacker.setIP(libnet_get_ipaddr4(context));
 	attacker.setMAC(libnet_get_hwaddr(context));
 	attacker.setName("Attacker (you)");
+
 	libnet_destroy(context);
 }

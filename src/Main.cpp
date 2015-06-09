@@ -115,6 +115,7 @@ static Host& selectVictim(vector<Host> hosts){
 	int op;
 	printf("\nSelect victim [ID]: ");
 	scanf("%d", &op);
+	getchar();
 	// TODO teste de leitura do scanf
 	return hosts[op - 1];
 }
@@ -159,15 +160,15 @@ int main(int argc, char* argv[]){
 	Pipe gateway2victim(Globals::gateway, Globals::victim);
 	gateway2victim.init();
 	printf("Pipe 1 concluido\n");
-	getchar();
-	getchar();
-	/*
-	Pipe victim2gateway(victim, gateway);
 
+	Pipe victim2gateway(Globals::victim, Globals::gateway);
+	victim2gateway.init();
+	printf("Pipe 2 concluido\n");
+
+	printf("Loop...\n");
 	while(true){
-		Renderer renderer();
+		//Renderer renderer();
 	}
-	*/
 
 	return 0;
 }

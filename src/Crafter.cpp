@@ -13,7 +13,7 @@ uint8_t Crafter::zeroMAC[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 /************************************************************************
  * * * * * * * * CONSTRUCTORS * * * * * * * * * * * * * * * * * * * * * *
  ************************************************************************/
-Crafter::Crafter() {}
+Crafter::Crafter() : context(NULL){}
 
 Crafter::Crafter(const char* iface){
 	context = libnet_init(LIBNET_LINK_ADV, iface, errorBuffer);
@@ -71,8 +71,13 @@ uint32_t Crafter::getSize(){
 	return libnet_getpacket_size(context);
 }
 
+uint32_t Crafter::getInterfaceIP(){
+	return libnet_get_ipaddr4(context);
+}
 
-
+libnet_ether_addr* Crafter::getInterfaceMAC(){
+	return libnet_get_hwaddr(context);
+}
 
 /************************************************************************
  * * * * * * * * Protocols * * * * * * * * * * * * * * * * * * * * * * **

@@ -20,7 +20,7 @@
 #include "Host.h"
 
 #define NL_BUF_SIZE 4096
-#define GW_ERROR 	  -1
+#define GW_ERROR 	  (unsigned)-1
 
 class Globals {
 	static int readNLMsg(int sock, char *buf, int seqNum, int pid);

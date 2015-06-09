@@ -55,6 +55,8 @@ void Sweeper::sendARPRequest(uint32_t ip){
 	crafter.arp(ARPOP_REQUEST, Globals::attacker.mac->ether_addr_octet, Globals::attacker.ip, Crafter::zeroMAC, ip);
 	crafter.ethernet((uint16_t)ETHERTYPE_ARP, Globals::attacker.mac->ether_addr_octet, Crafter::broadcastMAC);
 	crafter.send();
+	if(Globals::verbose)
+		printf("  Probed host on %s ...\n", Host::ipToString(ip).c_str());
 }
 
 void* Sweeper::sendProbes(void* args){
@@ -64,16 +66,13 @@ void* Sweeper::sendProbes(void* args){
 	uint32_t i;
 	uint32_t initial = htonl(arguments->initial);
 
-	for(i = 0; i < arguments->range; i++){
+	for(i = 1; i < arguments->range; i++){
 		uint32_t curr = ntohl(initial + i);
-		if(curr != Globals::attacker.ip){
-			if(Globals::verbose)
-				printf("  Probing host on %s ...\n", Host::ipToString(curr).c_str());
+		if(curr != Globals::attacker.ip)
 			sendARPRequest(curr);
-		}
 	}
+	sleep(5);
 
-	sleep(8);
 	int count = 0;
 	if(Globals::gateway.ip){
 		while(Globals::gateway.mac == NULL && count < 5){
