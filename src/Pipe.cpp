@@ -18,32 +18,40 @@ void Pipe::init(){
 	args->dst = &dst;
 	args->sniffer = nullptr;
 
-	if(pthread_create(&thread, NULL, connect, args) < 0){
+	if(pthread_create(&thread, nullptr, connect, args) < 0){
 		printf("Webspy::Pipe::init > [ERRO] can't init relay thread\n");
 		exit(EXIT_FAILURE);
 	}
 }
 
 void* Pipe::connect(void* arguments){
-	char filter[] = "tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)";
+	//char filter[] = "tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)";
+	char filter[] = "tcp port 80";
 	Sniffer sniffer(filter);
-	printf("Sniffer on Pipe is settled\n");
+	printf("Pipe is setted\n");
 	sniffer.listen(relay, (u_char*)arguments);
+	printf("Sai do listen\n");
 	return nullptr;
 }
 
 void Pipe::relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet){
 	pipeListenerArgs* arguments = (pipeListenerArgs*) args;
 
-	printf("Argumentos\n  Src: %s\n  Dst: %s\n");
 	Ethernet ether((unsigned char*) packet);
-	printf(
-		"Pacote Ether tipo %s de %s para %s\n",
-		htons(ether.ptype) == ETHERTYPE_IP ? "IP" : "Other",
-		Host::macToString(ether.shaddr).c_str(),
-		Host::macToString(ether.thaddr).c_str()
-	);
+	printf("Chegou pacote. Tam.: %u bytes ", header->len);
+	if(!memcmp(Globals::attacker.mac, ether.thaddr, 6)){
+		IP ip((unsigned char*) packet);
+		if(arguments->src->ip == ip.src){
+			printf("Vitima ->");
+		} else{
+			printf("%s -> ", Host::ipToString(ip.src).c_str());
+		}
+		printf("Atacante");
+	} else{
+		printf("%s", Host::macToString(ether.thaddr));
+	}
 
+	printf("\n");
 	/*if(htons(ether.ptype) == ETHERTYPE_IP){
 		if(!memcmp(ether.shaddr, pipe->src.mac->ether_addr_octet, 6)){
 			printf("Recebi um pacote de %s\n", pipe->src.name.c_str());

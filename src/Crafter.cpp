@@ -23,7 +23,6 @@ Crafter::Crafter(const char* iface){
 }
 
 Crafter::~Crafter() {
-	libnet_clear_packet(context);
 	libnet_destroy(context);
 }
 

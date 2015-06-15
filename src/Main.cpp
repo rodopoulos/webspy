@@ -30,12 +30,13 @@
 using namespace std;
 
 static void showUsage(int exitCode){
-	fprintf(stderr, "Usage: webspy [-v] [-l] [-i iface]\n");
+	fprintf(stderr, "Usage: webspy [-v] [-l] [-i iface] [-V victim]\n");
 	fprintf(stderr, "Options:\n");
 	fprintf(stderr, "    -h,--help          Show this help message\n");
 	fprintf(stderr, "    -v,--verbose       Enable verbose mode\n");
 	fprintf(stderr, "    -l,--logging       Enable logging (avaiable at ./log)\n");
-	fprintf(stderr, "    -i,--interface     Select the network interface\n\n");
+	fprintf(stderr, "    -i,--interface     Select the network interface\n");
+	fprintf(stderr, "    -V,--victim        Victim IP\n");
 	fprintf(stderr, "Developed by Felipe Rodopoulos, 2015\n\n");
 	exit(exitCode);
 }
@@ -51,6 +52,12 @@ static void parseProgramArguments(int argc, char* argv[]){
 			Globals::verbose = true;
 		} else if(arg == "-i" || arg == "--iface"){
 			Globals::iface = argv[i + 1];
+			i++;
+		} else if(arg == "-V" || arg == "--victim"){
+			Globals::victim.setIP(argv[i+1]);
+			printf("IP %s\n", Host::ipToString(Globals::victim.ip).c_str());
+			Sweeper::findHostMAC(&Globals::victim);
+			Globals::victim.toString();
 			i++;
 		} else{
 			printf("Unrecognized argument: %s\n", argv[i]);
@@ -161,14 +168,17 @@ int main(int argc, char* argv[]){
 	gateway2victim.init();
 	printf("Pipe 1 concluido\n");
 
-	Pipe victim2gateway(Globals::victim, Globals::gateway);
-	victim2gateway.init();
-	printf("Pipe 2 concluido\n");
+	//Pipe victim2gateway(Globals::victim, Globals::gateway);
+	//victim2gateway.init();
+	//printf("Pipe 2 concluido\n");
 
 	printf("Loop...\n");
-	while(true){
+	int i = 0;
+	while(1==1){
 		//Renderer renderer();
+		i = 1 - i;
 	}
-
+	printf("Apertae pra sair do programa");
+	getchar();
 	return 0;
 }

@@ -55,3 +55,11 @@ ARP::ARP(unsigned char* buf){
 uint16_t ARP::getOperation(){
 	return ntohl(this->arpOp);
 }
+
+// --------- IP HEADER METHODS ------------------------------------
+IP::IP(unsigned char* buf){
+	buf += 14;
+	memcpy(&versionAndHl, buf, 32);
+	buf += 32;
+	memcpy(&id, buf, len - 32);
+}

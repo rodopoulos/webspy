@@ -28,6 +28,7 @@ public:
 
 	// Getters e Setters
 	void setIP(uint32_t ip);
+	void setIP(std::string ip);
 	void setMAC(libnet_ether_addr* mac);
 	void setMAC(uint8_t mac[]);
 	void setName(std::string name);
@@ -42,6 +43,8 @@ public:
 	static std::string macToString(uint8_t mac[]);
 	static std::string ipToString(uint32_t ip);
 	static bool isSameMAC(uint8_t mac1[], uint8_t mac2[]);
+	static bool isDefined(Host host);
+	static bool isDefined(Host& host);
 };
 
 #endif /* HOST_H_ */

@@ -32,6 +32,14 @@ void Host::setIP(uint32_t ip){
 	this->ip = ip;
 }
 
+void Host::setIP(std::string ip){
+	if(inet_pton(AF_INET, ip.c_str(), &this->ip) == -1){
+		fprintf(stderr, "Webspy::Globals::stringToIP > IP address %s not valid.\n", ip.c_str());
+		exit(EXIT_FAILURE);
+	}
+	//printf("Setted IP: %u %s\n", this->ip, ipToString(this->ip).c_str());
+}
+
 void Host::setMAC(libnet_ether_addr* mac){
 	this->mac = mac;
 }
@@ -108,6 +116,18 @@ bool Host::isSameMAC(uint8_t mac1[], uint8_t mac2[]){
 	return true;
 }
 
+bool Host::isDefined(Host host){
+	if(!host.mac || !host.ip)
+		return false;
+	return true;
+}
+
+bool Host::isDefined(Host& host){
+	if(!host.mac || !host.ip)
+		return false;
+	return true;
+}
+
 char* Host::getMACVendor(uint8_t mac[]){
 	/*char tmac[6];
 	int i = 0;
@@ -123,6 +143,6 @@ char* Host::getMACVendor(uint8_t mac[]){
 			return oui_table[i].vendor;
 	} */
 
-	char* str = "Unknown vendor";
+	char str[] = "Unknown vendor";
 	return str;
 }
