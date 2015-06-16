@@ -33,16 +33,14 @@ class Sweeper {
 	static void arpReplyFilter(u_char *args, const struct pcap_pkthdr* header, const unsigned char* packet);
 	static void singleReplyFilter(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
 	static void sendARPRequest(uint32_t ip);
+	static void hexDump(const unsigned char* buf, int iByte, int lByte);
 
 public:
 	Sweeper();
 	virtual ~Sweeper();
 
 	std::vector<Host>& sweep();
-	static void getGatewayMAC();
 	static void findHostMAC(Host* host);
-
-	static void hexDump(const unsigned char* buf, int iByte, int lByte);
 };
 
 #endif /* SWEEPER_H_ */

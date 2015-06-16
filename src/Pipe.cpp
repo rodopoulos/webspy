@@ -28,7 +28,7 @@ void* Pipe::connect(void* arguments){
 	//char filter[] = "tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)";
 	char filter[] = "tcp port 80";
 	Sniffer sniffer(filter);
-	printf("Pipe is setted\n");
+	printf("Pipe thread is running\n");
 	sniffer.listen(relay, (u_char*)arguments);
 	printf("Sai do listen\n");
 	return nullptr;
@@ -48,7 +48,7 @@ void Pipe::relay(u_char* args, const struct pcap_pkthdr* header, const unsigned 
 		}
 		printf("Atacante");
 	} else{
-		printf("%s", Host::macToString(ether.thaddr));
+		printf("%s", Host::macToString(ether.thaddr).c_str());
 	}
 
 	printf("\n");

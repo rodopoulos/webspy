@@ -122,8 +122,8 @@ bool Host::isDefined(Host host){
 	return true;
 }
 
-bool Host::isDefined(Host& host){
-	if(!host.mac || !host.ip)
+bool Host::isDefined(Host* host){
+	if(!host->mac || !host->ip)
 		return false;
 	return true;
 }

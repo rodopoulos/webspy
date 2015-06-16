@@ -53,9 +53,7 @@ void* Spoofer::spoof(void* args){
 	char filter[] = "arp";
 	Sniffer sniffer(filter);
 
-	if(Globals::verbose)
-		printf("Spoofing is settled\n");
-
+	printf("Spoofing thread is running\n");
 	do{
 		// Spoofando de novo
 		toVictim.send();
