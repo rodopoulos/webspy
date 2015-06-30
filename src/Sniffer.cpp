@@ -119,7 +119,9 @@ void Sniffer::close(){
 }
 
 
-
+void Sniffer::send(const unsigned char* packet, int size){
+	pcap_sendpacket(handle, packet, size);
+}
 
 /************************************************************************
  * * * * * * * * Setters * * * * * * * * * * * * * * * * * * * * * * **

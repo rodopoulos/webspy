@@ -59,7 +59,10 @@ uint16_t ARP::getOperation(){
 // --------- IP HEADER METHODS ------------------------------------
 IP::IP(unsigned char* buf){
 	buf += 14;
-	memcpy(&versionAndHl, buf, 32);
-	buf += 32;
-	memcpy(&id, buf, len - 32);
+	memcpy(&versionAndHl, buf, 20);
+}
+
+TCP::TCP(unsigned char* buf){
+	buf += 34;
+	memcpy(&sport, buf, 20);
 }

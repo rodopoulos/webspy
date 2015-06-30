@@ -17,9 +17,11 @@
 #define CRAFTER_UDP			5
 #define CRAFTER_DNS			6
 
+#include <map>
 #include <libnet.h>
 #include "Globals.h"
-#include <map>
+#include "Protocols.h"
+
 
 class Crafter {
 	libnet_t* 						context;
@@ -41,13 +43,19 @@ public:
 	void clear();
 	void close();
 
-	uint32_t getSize();
+	uint32_t getPacketSize();
 	uint32_t getInterfaceIP();
 	libnet_ether_addr* getInterfaceMAC();
 
 	void arp(uint16_t op, uint8_t smac[], uint32_t sip, uint8_t tmac[], uint32_t tip);
+
 	void ethernet(uint16_t op, uint8_t smac[], uint8_t tmac[]);
-	// void ip();
+	void ethernet(Ethernet* ether);
+
+	void ip(uint16_t len, uint32_t src, uint32_t dst);
+	void ip(IP* ip);
+
+	void tcp(TCP* tcp);
 };
 
 #endif /* SRC_CRAFTER_H_ */

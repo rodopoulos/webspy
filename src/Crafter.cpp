@@ -66,7 +66,7 @@ void Crafter::error(const char* method){
 /************************************************************************
  * * * * * * * * Getters * * * * * * * * * * * * * * * * * * * * * * * **
  ************************************************************************/
-uint32_t Crafter::getSize(){
+uint32_t Crafter::getPacketSize(){
 	return libnet_getpacket_size(context);
 }
 
@@ -119,6 +119,134 @@ void Crafter::ethernet(uint16_t op, uint8_t smac[], uint8_t tmac[]){
 		}
 	} else{
 		if(libnet_build_ethernet(tmac, smac, op, NULL, 0, context, tag->second) == LIBNET_ERROR){
+			error(__func__);
+		}
+	}
+}
+
+void Crafter::ethernet(Ethernet* ether){
+	auto tag = protocols.find(CRAFTER_ETHERNET);
+	if(tag == protocols.end()){
+		libnet_ptag_t newTag = libnet_build_ethernet(
+			ether->thaddr,
+			ether->shaddr,
+			ether->ptype,
+			NULL,
+			0,
+			context,
+			0
+		);
+		if(newTag == LIBNET_ERROR){
+			error(__func__);
+		} else {
+			protocols[CRAFTER_ETHERNET] = newTag;
+		}
+	} else{
+		int response = libnet_build_ethernet(
+			ether->thaddr,
+			ether->shaddr,
+			ether->ptype,
+			NULL,
+			0,
+			context,
+			tag->second
+		);
+		if(response == LIBNET_ERROR){
+			error(__func__);
+		}
+	}
+}
+
+void Crafter::ip(uint16_t len, uint32_t src, uint32_t dst){
+	auto tag = protocols.find(CRAFTER_IP);
+	if(tag == protocols.end()){
+		libnet_ptag_t newTag = libnet_build_ipv4(len, 0, 0, 0, 255, IPPROTO_TCP, 0, src, dst, nullptr, 0, context, 0);
+		if(newTag == LIBNET_ERROR){
+			error(__func__);
+		} else {
+			protocols[CRAFTER_IP] = newTag;
+		}
+	} else {
+		if(libnet_build_ipv4(len, 0, 0, 0, 255, IPPROTO_TCP, 0, src, dst, nullptr, 0, context, tag->second) == LIBNET_ERROR){
+			error(__func__);
+		}
+	}
+}
+
+void Crafter::ip(IP* ip){
+	auto tag = protocols.find(CRAFTER_IP);
+	if(tag == protocols.end()){
+		libnet_ptag_t newTag = libnet_build_ipv4(
+			ip->len,
+			0, 0, 0, // tos, id, frag
+			ip->ttl,
+			ip->protocol,
+			0, // checksum
+			ip->src,
+			ip->dst,
+			nullptr, 0,
+			context, 0
+		);
+		if(newTag == LIBNET_ERROR){
+			error(__func__);
+		} else {
+			protocols[CRAFTER_IP] = newTag;
+		}
+	} else {
+		int response = libnet_build_ipv4(
+			ip->len,
+			0, 0, 0, // tos, id, frag
+			ip->ttl,
+			ip->protocol,
+			0, // checksum
+			ip->src,
+			ip->dst,
+			nullptr, 0,
+			context, tag->second
+		);
+		if(response == LIBNET_ERROR){
+			error(__func__);
+		}
+	}
+}
+
+void Crafter::tcp(TCP* tcp){
+	auto tag = protocols.find(CRAFTER_TCP);
+	uint16_t control = ((uint16_t) tcp->offrsv) << 8 || tcp->flags;
+	if(tag == protocols.end()){
+		libnet_ptag_t newTag = libnet_build_tcp(
+			tcp->sport,
+			tcp->dport,
+			tcp->seqid,
+			tcp->ackid,
+			control,
+			tcp->window,
+			tcp->checksum,
+			tcp->urgptr,
+			0,
+			NULL, 0,
+			context, 0
+		);
+		if(newTag == LIBNET_ERROR){
+			error(__func__);
+		} else {
+			protocols[CRAFTER_TCP] = newTag;
+		}
+	} else {
+		int response = libnet_build_tcp(
+			tcp->sport,
+			tcp->dport,
+			tcp->seqid,
+			tcp->ackid,
+			control,
+			tcp->window,
+			tcp->checksum,
+			tcp->urgptr,
+			0,
+			NULL, 0,
+			context, tag->second
+		);
+		if(response == LIBNET_ERROR){
 			error(__func__);
 		}
 	}

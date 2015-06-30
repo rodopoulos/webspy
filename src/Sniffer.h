@@ -45,10 +45,11 @@ public:
 	void listen(pcap_handler callback);
 	void listen(pcap_handler callback, u_char* args);
 
-	/* ================== Modifiers ================== */
+	/* ================== Actions =================== */
 	void init();
 	void breakLoop();
 	void close();
+	void send(const unsigned char* packet, int size);
 
 	/* =================== Setters =================== */
 	void setFilter(const char* filter);

@@ -20,6 +20,7 @@ void Spoofer::init(){
 }
 
 void* Spoofer::spoof(void* args){
+	printf("Spoofing thread is running\n");
 	// Poisoned frame to victim
 	Crafter toVictim(Globals::iface);
 	toVictim.arp(
@@ -53,7 +54,6 @@ void* Spoofer::spoof(void* args){
 	char filter[] = "arp";
 	Sniffer sniffer(filter);
 
-	printf("Spoofing thread is running\n");
 	do{
 		// Spoofando de novo
 		toVictim.send();

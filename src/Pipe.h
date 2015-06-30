@@ -7,18 +7,21 @@
 
 #ifndef PIPE_H_
 #define PIPE_H_
+#define XORSWAP(a, b)	((a)^=(b),(b)^=(a),(a)^=(b))
 
 #include <pcap.h>
 #include <pthread.h>
 
 #include "Host.h"
 #include "Protocols.h"
+#include "Crafter.h"
 #include "Sniffer.h"
 
 struct pipeListenerArgs{
 	Host* 	 src;
 	Host* 	 dst;
 	Sniffer* sniffer;
+	Crafter* crafter;
 };
 
 class Pipe {

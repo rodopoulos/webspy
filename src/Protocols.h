@@ -21,6 +21,7 @@ struct ARP{
 	uint32_t	spaddr;
 	uint8_t		thaddr[6];
 	uint32_t	tpaddr;
+
 	ARP(unsigned char* buf);
 	uint16_t getOperation();
 };
@@ -29,6 +30,7 @@ struct Ethernet{
 	uint8_t		thaddr[6];	/* Target MAC Address */
 	uint8_t		shaddr[6];	/* Sender MAC Address */
 	uint16_t	ptype;		/* Protocol type */
+
 	Ethernet(unsigned char* buf);
 	uint16_t getType();
 	const char* getTypeName();
@@ -45,6 +47,7 @@ struct IP{
 	uint16_t checksum;
 	uint32_t src;
 	uint32_t dst;
+
 	IP(unsigned char* buf);
 };
 
@@ -58,6 +61,14 @@ struct TCP{
 	uint16_t window;
 	uint16_t checksum;
 	uint16_t urgptr;
+
+	TCP(unsigned char* buf);
+#define TCP_FIN 0x01
+#define TCP_SYN 0x02
+#define TCP_RST 0x04
+#define TCP_PSH 0x08
+#define TCP_ACK 0x10
+#define TCP_URG 0x20
 };
 
 struct HTML{

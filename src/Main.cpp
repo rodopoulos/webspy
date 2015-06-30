@@ -170,7 +170,7 @@ int main(int argc, char* argv[]){
 	Spoofer spoofer;
 	spoofer.init();
 
-	Pipe gateway2victim(Globals::gateway, Globals::victim);
+	Pipe gateway2victim(Globals::victim, Globals::gateway);
 	gateway2victim.init();
 
 	//Pipe victim2gateway(Globals::victim, Globals::gateway);
