@@ -21,6 +21,7 @@
 #include <libnet.h>
 #include "Globals.h"
 #include "Protocols.h"
+#include "Packet.h"
 
 
 class Crafter {
@@ -40,6 +41,8 @@ public:
 
 	void init(const char* iface);
 	void send();
+	void sendRaw(const unsigned char* data, uint32_t size);
+	void sendRaw(Packet packet);
 	void clear();
 	void close();
 

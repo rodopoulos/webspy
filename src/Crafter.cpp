@@ -47,6 +47,18 @@ void Crafter::send(){
 	}
 }
 
+void Crafter::sendRaw(const unsigned char* data, uint32_t size){
+	int response = libnet_adv_write_link(context, data, size);
+	if(response == LIBNET_ERROR)
+		error(__func__);
+}
+
+void Crafter::sendRaw(Packet packet){
+	int response = libnet_adv_write_link(context, packet.data, packet.len);
+	if(response == LIBNET_ERROR)
+		error(__func__);
+}
+
 void Crafter::clear(){
 	libnet_clear_packet(context);
 }

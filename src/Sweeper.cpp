@@ -181,20 +181,24 @@ void Sweeper::findHostMAC(Host* host){
 	sleep(1);
 
 	const unsigned char* packet;
+	int loops;
 	do{
 		packet = arpSniffer.nextPacket();
-		Ethernet etherHeader((unsigned char*) packet);
-		if(htons(etherHeader.ptype) == ETHERTYPE_ARP){
-			ARP arpPacket((unsigned char*)packet);
-			if(htons(arpPacket.arpOp) == ARPOP_REPLY){
-				if(host->ip == arpPacket.spaddr){
-					host->setMAC(arpPacket.shaddr);
-					printf("found with MAC %s\n", Host::macToString(host->mac).c_str());
-					return;
+		if(packet){
+			Ethernet etherHeader((unsigned char*) packet);
+			if(htons(etherHeader.ptype) == ETHERTYPE_ARP){
+				ARP arpPacket((unsigned char*)packet);
+				if(htons(arpPacket.arpOp) == ARPOP_REPLY){
+					if(host->ip == arpPacket.spaddr){
+						host->setMAC(arpPacket.shaddr);
+						printf("found with MAC %s\n", Host::macToString(host->mac).c_str());
+						return;
+					}
 				}
 			}
 		}
-	} while(1==1);
+		loops++;
+	} while(loops != 5);
 	printf("not found\n");
 }
 

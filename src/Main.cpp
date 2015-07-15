@@ -170,17 +170,17 @@ int main(int argc, char* argv[]){
 	Spoofer spoofer;
 	spoofer.init();
 
+	//Renderer renderer();
+
 	Pipe gateway2victim(Globals::victim, Globals::gateway);
 	gateway2victim.init();
 
-	//Pipe victim2gateway(Globals::victim, Globals::gateway);
-	//victim2gateway.init();
-	//printf("Pipe 2 concluido\n");
+	Pipe victim2gateway(Globals::gateway, Globals::victim);
+	victim2gateway.init();
 
 	printf("Loop...\n");
 	int i = 0;
-	while(1==1){
-		//Renderer renderer();
+	while(1 == 1){
 		i = 1 - i;
 	}
 	printf("Apertae pra sair do programa");

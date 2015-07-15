@@ -14,8 +14,8 @@
 
 #include "Host.h"
 #include "Protocols.h"
-#include "Crafter.h"
 #include "Sniffer.h"
+#include "Crafter.h"
 
 struct pipeListenerArgs{
 	Host* 	 src;
@@ -27,9 +27,13 @@ struct pipeListenerArgs{
 class Pipe {
 	Host&		src, dst;
 	pthread_t   thread;
+	pthread_mutex_t victimMutex, gatewayMutex;
 
 	static void* connect(void* args);
-	static void relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
+	static void  relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
+	static void* routeToVictim(void* args);
+	static void* routeToGateway(void* args);
+	static void strip();
 
 public:
 	Pipe(Host& src, Host& dst);

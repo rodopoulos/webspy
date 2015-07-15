@@ -60,8 +60,9 @@ Sniffer::Sniffer(char filterExpression[]) : filterExpression(filterExpression){
 	if(pcap_compile(handle, &filter, this->filterExpression, 0, mask) == PCAP_ERROR){
 		fprintf(stderr,
 			"Webspy::Sniffer::Constructor > "
-			"[ERRO] Pcap error: can't compile filter: %s\n",
-			filterExpression
+			"[ERRO] Pcap error: can't compile filter (%s): %s\n",
+			filterExpression,
+			pcap_geterr(handle)
 		);
 		exit(EXIT_FAILURE);
 	}
@@ -120,7 +121,17 @@ void Sniffer::close(){
 
 
 void Sniffer::send(const unsigned char* packet, int size){
-	pcap_sendpacket(handle, packet, size);
+	printf("Vou enviar esses bytes: ");
+	int response = pcap_sendpacket(handle, packet, size);
+	printf("%d\n", response);
+	if(response == PCAP_ERROR){
+		fprintf(stderr,
+			"Webspy::Sniffer::send > "
+			"[ERRO] can't send package: %s\n",
+			pcap_geterr(handle)
+		);
+		exit(EXIT_FAILURE);
+	}
 }
 
 /************************************************************************

@@ -16,8 +16,10 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <libnet.h>
+#include <queue>
 
 #include "Host.h"
+#include "Packet.h"
 
 #define NL_BUF_SIZE 4096
 #define GW_ERROR 	  (unsigned)-1
@@ -29,12 +31,15 @@ class Globals {
 public:
 	static bool  	verbose;
 	static bool  	logging;
-	static char* 	browser;
 	static char* 	iface;
 
 	static Host		attacker;
 	static Host		victim;
 	static Host		gateway;
+
+	static std::queue<Packet>	gatewayBuffer;
+	static std::queue<Packet>	victimBuffer;
+	static std::queue<Packet>	renderBuffer;
 
 	static void findGateway();
 	static void	findAttacker();
