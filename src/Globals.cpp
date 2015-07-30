@@ -16,8 +16,6 @@ Host 		Globals::attacker;
 Host 		Globals::victim;
 Host 		Globals::gateway;
 
-std::queue<Packet>	Globals::gatewayBuffer;
-std::queue<Packet>	Globals::victimBuffer;
 std::queue<Packet>	Globals::renderBuffer;
 
 int Globals::readNLMsg(int sock, char* buf, int seqNum, int pid){

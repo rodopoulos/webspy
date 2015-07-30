@@ -37,8 +37,6 @@ public:
 	static Host		victim;
 	static Host		gateway;
 
-	static std::queue<Packet>	gatewayBuffer;
-	static std::queue<Packet>	victimBuffer;
 	static std::queue<Packet>	renderBuffer;
 
 	static void findGateway();

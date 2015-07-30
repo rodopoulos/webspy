@@ -172,11 +172,8 @@ int main(int argc, char* argv[]){
 
 	//Renderer renderer();
 
-	Pipe gateway2victim(Globals::victim, Globals::gateway);
-	gateway2victim.init();
-
-	Pipe victim2gateway(Globals::gateway, Globals::victim);
-	victim2gateway.init();
+	Pipe pipe;
+	pipe.init();
 
 	printf("Loop...\n");
 	int i = 0;

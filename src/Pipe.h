@@ -12,31 +12,26 @@
 #include <pcap.h>
 #include <pthread.h>
 
+#include <queue>
 #include "Host.h"
 #include "Protocols.h"
 #include "Sniffer.h"
 #include "Crafter.h"
 
-struct pipeListenerArgs{
-	Host* 	 src;
-	Host* 	 dst;
-	Sniffer* sniffer;
-	Crafter* crafter;
-};
-
 class Pipe {
-	Host&		src, dst;
-	pthread_t   thread;
-	pthread_mutex_t victimMutex, gatewayMutex;
+	pthread_t snifferThread, victimThread, gatewayThread;
+	static pthread_mutex_t victimMutex, gatewayMutex;
+	static Crafter victimCrafter, gatewayCrafter;
+	static std::queue<Packet> gatewayBuffer, victimBuffer;
 
 	static void* connect(void* args);
 	static void  relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
 	static void* routeToVictim(void* args);
 	static void* routeToGateway(void* args);
-	static void strip();
+	static Packet strip(Packet packet);
 
 public:
-	Pipe(Host& src, Host& dst);
+	Pipe();
 	virtual ~Pipe();
 	void init();
 };
