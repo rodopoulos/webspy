@@ -176,7 +176,7 @@ void Sweeper::findHostMAC(Host* host){
 	Sniffer arpSniffer(filter);
 	arpSniffer.setDirection(PCAP_D_IN);
 
-	printf("ARP Request to host on %s ... ", Host::ipToString(host->ip).c_str());
+	printf("ARP Request to host on %s ...", Host::ipToString(host->ip).c_str());
 	crafter.send();
 	sleep(1);
 
@@ -191,14 +191,16 @@ void Sweeper::findHostMAC(Host* host){
 				if(htons(arpPacket.arpOp) == ARPOP_REPLY){
 					if(host->ip == arpPacket.spaddr){
 						host->setMAC(arpPacket.shaddr);
-						printf("found with MAC %s\n", Host::macToString(host->mac).c_str());
+						printf(" found with MAC %s\n", Host::macToString(host->mac).c_str());
 						return;
 					}
 				}
 			}
 		}
 		loops++;
+		printf(".");
+		sleep(1);
 	} while(loops != 5);
-	printf("not found\n");
+	printf(" not found\n");
 }
 
