@@ -22,29 +22,28 @@ void Pipe::init(){
 	victimCrafter.init(Globals::iface);
 	gatewayCrafter.init(Globals::iface);
 
-	if(pthread_create(&snifferThread, nullptr, connect, nullptr) < 0){
-		printf("Webspy::Pipe::init > [ERRO] can't init relay thread\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if(pthread_create(&victimThread, nullptr, routeToVictim, nullptr) < 0){
-		printf("Webspy::Pipe::init > [ERRO] can't init victim relayer thread\n");
-		exit(EXIT_FAILURE);
-	}
 	if(pthread_mutex_init(&victimMutex, NULL) < 0){
 		printf("Webspy::Pipe::init > [ERRO] can't init relay thread\n");
 		exit(EXIT_FAILURE);
 	}
-
-	if(pthread_create(&gatewayThread, nullptr, routeToGateway, nullptr) < 0){
-		printf("Webspy::Pipe::init > [ERRO] can't init gateway relayer thread\n");
+	if(pthread_create(&victimThread, nullptr, routeToVictim, nullptr) < 0){
+		printf("Webspy::Pipe::init > [ERRO] can't init victim relayer thread\n");
 		exit(EXIT_FAILURE);
 	}
+
 	if(pthread_mutex_init(&gatewayMutex, NULL) < 0){
 		printf("Webspy::Pipe::init > [ERRO] can't init relay thread\n");
 		exit(EXIT_FAILURE);
 	}
+	if(pthread_create(&gatewayThread, nullptr, routeToGateway, nullptr) < 0){
+		printf("Webspy::Pipe::init > [ERRO] can't init gateway relayer thread\n");
+		exit(EXIT_FAILURE);
+	}
 
+	if(pthread_create(&snifferThread, nullptr, connect, nullptr) < 0){
+		printf("Webspy::Pipe::init > [ERRO] can't init relay thread\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 void* Pipe::connect(void* args){
