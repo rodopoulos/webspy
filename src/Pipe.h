@@ -28,6 +28,7 @@ class Pipe {
 	static void  relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
 	static void* routeToVictim(void* args);
 	static void* routeToGateway(void* args);
+	static int isHTTPData(Packet& rcvdPacket);
 	static Packet strip(Packet packet);
 
 public:

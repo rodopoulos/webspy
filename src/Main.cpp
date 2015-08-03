@@ -170,7 +170,8 @@ int main(int argc, char* argv[]){
 	Spoofer spoofer;
 	spoofer.init();
 
-	//Renderer renderer();
+	Renderer renderer();
+	renderer.init();
 
 	Pipe pipe;
 	pipe.init();
