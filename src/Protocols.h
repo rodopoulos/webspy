@@ -55,14 +55,15 @@ struct TCP{
 	uint16_t sport;
 	uint16_t dport;
 	uint32_t seqid;
-	uint32_t ackid;
-	uint8_t  offrsv;
+	uint32_t ack;
+	uint8_t  hlen;
 	uint8_t  flags;
 	uint16_t window;
 	uint16_t checksum;
 	uint16_t urgptr;
 
 	TCP(unsigned char* buf);
+	int getHdrLen();
 #define TCP_FIN 0x01
 #define TCP_SYN 0x02
 #define TCP_RST 0x04
@@ -71,11 +72,11 @@ struct TCP{
 #define TCP_URG 0x20
 };
 
-struct HTML{
-	uint8_t	method;
-	uint8_t ver;
-	uint8_t datatype;
-	char* url;
+struct HTTP{
+	char*	data;
+	int		connection;
+
+	HTTP(unsigned char* buf);
 };
 
 

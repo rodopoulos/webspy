@@ -62,7 +62,18 @@ IP::IP(unsigned char* buf){
 	memcpy(&versionAndHl, buf, 20);
 }
 
+// --------- TCP HEADER METHODS ------------------------------------
 TCP::TCP(unsigned char* buf){
 	buf += 34;
 	memcpy(&sport, buf, 20);
 }
+
+int TCP::getHdrLen(){
+	return hlen >> 2;
+}
+
+// --------- HTTP HEADER METHODS ------------------------------------
+HTTP::HTTP(unsigned char* buf){
+
+}
+

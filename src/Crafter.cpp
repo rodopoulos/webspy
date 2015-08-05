@@ -49,14 +49,14 @@ void Crafter::send(){
 
 void Crafter::sendRaw(const unsigned char* data, uint32_t size){
 	int response = libnet_adv_write_link(context, data, size);
-	//if(response == LIBNET_ERROR)
-		//error(__func__);
+	if(response == LIBNET_ERROR)
+		error(__func__);
 }
 
 void Crafter::sendRaw(Packet packet){
 	int response = libnet_adv_write_link(context, packet.data, packet.len);
-	//if(response == LIBNET_ERROR)
-		//error(__func__);
+	if(response == LIBNET_ERROR)
+		error(__func__);
 }
 
 void Crafter::clear(){
@@ -224,14 +224,13 @@ void Crafter::ip(IP* ip){
 
 void Crafter::tcp(TCP* tcp){
 	auto tag = protocols.find(CRAFTER_TCP);
-	uint16_t control = ((uint16_t) tcp->offrsv) << 8 || tcp->flags;
 	if(tag == protocols.end()){
 		libnet_ptag_t newTag = libnet_build_tcp(
 			tcp->sport,
 			tcp->dport,
 			tcp->seqid,
-			tcp->ackid,
-			control,
+			tcp->ack,
+			tcp->flags,
 			tcp->window,
 			tcp->checksum,
 			tcp->urgptr,
@@ -249,8 +248,8 @@ void Crafter::tcp(TCP* tcp){
 			tcp->sport,
 			tcp->dport,
 			tcp->seqid,
-			tcp->ackid,
-			control,
+			tcp->ack,
+			tcp->flags,
 			tcp->window,
 			tcp->checksum,
 			tcp->urgptr,

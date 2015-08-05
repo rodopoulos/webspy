@@ -11,30 +11,32 @@
 
 #include <pcap.h>
 #include <pthread.h>
-
+#include <regex>
 #include <queue>
 #include "Host.h"
 #include "Protocols.h"
 #include "Sniffer.h"
 #include "Crafter.h"
+#include "Renderer.h"
 
 class Pipe {
 	pthread_t snifferThread, victimThread, gatewayThread;
-	static pthread_mutex_t victimMutex, gatewayMutex;
+	static pthread_mutex_t victimMutex, gatewayMutex, *rendererMutex;
 	static Crafter victimCrafter, gatewayCrafter;
 	static std::queue<Packet> gatewayBuffer, victimBuffer;
+
+	static Renderer* renderer;
 
 	static void* connect(void* args);
 	static void  relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
 	static void* routeToVictim(void* args);
 	static void* routeToGateway(void* args);
-	static int isHTTPData(Packet& rcvdPacket);
-	static Packet strip(Packet packet);
+	static void  stripHTTPS();
 
 public:
 	Pipe();
 	virtual ~Pipe();
-	void init();
+	void init(Renderer* rendererPtr);
 };
 
 #endif /* PIPE_H_ */

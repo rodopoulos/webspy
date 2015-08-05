@@ -10,6 +10,10 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <string>
+#include <iostream>
+
+#include "Protocols.h"
 
 class Packet {
 public:
@@ -18,6 +22,9 @@ public:
 
 	Packet(const unsigned char* data, int len);
 	virtual ~Packet();
+
+	bool isHTTP();
+	const unsigned char* getPayload();
 };
 
 #endif /* SRC_PACKET_H_ */

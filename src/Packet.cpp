@@ -15,3 +15,21 @@ Packet::Packet(const unsigned char* data, int len) {
 
 Packet::~Packet() {}
 
+bool Packet::isHTTP(){
+	IP* ip = (IP*) (14 + data);
+	if(ip->protocol == IPPROTO_TCP){
+		TCP* tcp = (TCP*) (14 + 20 + data);
+		if(tcp->flags == 0x18){
+			const char* payload = (const char*) this->getPayload();
+			if(strstr(payload, "HTTP") != NULL){
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+const unsigned char* Packet::getPayload(){
+	TCP* tcp = (TCP*) (14 + 20 + data);
+	return (14 + 20 + tcp->getHdrLen() + data);
+}

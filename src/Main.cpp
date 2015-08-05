@@ -170,18 +170,13 @@ int main(int argc, char* argv[]){
 	Spoofer spoofer;
 	spoofer.init();
 
-	Renderer renderer();
+	Renderer renderer;
 	renderer.init();
 
 	Pipe pipe;
-	pipe.init();
+	pipe.init(&renderer);
 
-	printf("Loop...\n");
-	int i = 0;
-	while(1 == 1){
-		i = 1 - i;
-	}
-	printf("Apertae pra sair do programa");
-	getchar();
+	renderer.serverLoop();
+
 	return 0;
 }

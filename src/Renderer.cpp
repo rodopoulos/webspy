@@ -7,20 +7,86 @@
 
 #include "Renderer.h"
 
-Renderer::Renderer() {
+std::queue<HTTP> Renderer::rendererBuffer;
+pthread_mutex_t  Renderer::rendererMutex;
+
+/************************************************************************
+ * * * * * * * * CONSTRUCTORS * * * * * * * * * * * * * * * * * * * * * *
+ ************************************************************************/
+Renderer::Renderer() : bufferThread(0){
+	server = mg_create_server(NULL, srvEventHandler);
+	mg_set_option(server, "document_root", "../www");
+	mg_set_option(server, "listening_port", "8080");
 }
 
 Renderer::~Renderer() {
 	// TODO Auto-generated destructor stub
 }
 
-Renderer::init(){
+
+
+
+
+
+/************************************************************************
+ * * * * * * * * * * PUBLIC ACTIONS * * * * * * * * * * * * * * * * * * *
+ ************************************************************************/
+void Renderer::init(){
+	// Initing HTTP buffer thread
 	if(pthread_mutex_init(&rendererMutex, NULL) < 0){
-		printf("Webspy::Pipe::init > [ERRO] can't init relay thread\n");
+		printf("Webspy::Renderer::init > [ERRO] can't init renderer mutex\n");
 		exit(EXIT_FAILURE);
 	}
-	if(pthread_create(&rendererThread, nullptr, rendererBuffer, nullptr) < 0){
-		printf("Webspy::Pipe::init > [ERRO] can't init victim relayer thread\n");
-		exit(EXIT_FAILURE);
+}
+
+void Renderer::serverLoop(){
+	// Initing server loop
+	printf("Local rendering server avaiable on localhost:8080\n");
+	for(;;){
+		mg_poll_server(server, 1000);
 	}
+
+	mg_destroy_server(&server);
+}
+
+
+
+
+
+/************************************************************************
+ * * * * * * * * CALLBACKS * * * * * * * * * * * * * * * * * * * * * * **
+ ************************************************************************/
+void* Renderer::rendererReceiver(void* args){
+	return nullptr;
+}
+
+int Renderer::srvEventHandler(struct mg_connection *conn, enum mg_event ev){
+	switch (ev){
+		case MG_REQUEST:
+			if(!rendererBuffer.empty()){
+				answerRequest(conn);
+			} else {
+				mg_printf_data(conn, "No screen to render");
+			}
+			return MG_TRUE;
+		break;
+		default: return MG_FALSE; break;
+	}
+}
+
+
+
+
+
+/************************************************************************
+ * * * * * * * * SERVER ACTIONS * * * * * * * * * * * * * * * * * * * * *
+ ************************************************************************/
+
+void Renderer::answerRequest(struct mg_connection *conn){
+	pthread_mutex_lock(&rendererMutex);
+	HTTP http = rendererBuffer.front();
+	rendererBuffer.pop();
+	pthread_mutex_unlock(&rendererMutex);
+
+	printf("%s\n\n", http.data);
 }
