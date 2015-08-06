@@ -79,5 +79,6 @@ int TCP::getHdrLen(){
 // --------- HTTP HEADER METHODS ------------------------------------
 HTTP::HTTP(unsigned char* buf, int size){
 	memcpy(&data, buf, size);
+	len = size;
 }
 

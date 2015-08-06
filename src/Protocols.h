@@ -76,6 +76,7 @@ struct TCP{
 struct HTTP{
 	char*	data;
 	int		connection;
+	int 	len;
 
 	HTTP(unsigned char* buf, int len);
 };

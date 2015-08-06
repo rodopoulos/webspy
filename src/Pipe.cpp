@@ -59,9 +59,7 @@ void* Pipe::connect(void* args){
 }
 
 void Pipe::relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet){
-	printf("Sera que da pau...");
 	Packet* rcvdPacket = new Packet(packet, header->len);
-	printf(" nao\n");
 	if(!memcmp(Globals::attacker.mac, rcvdPacket->ethernet->thaddr, 6)){
 		// Adding packets to the victim queue (send them to the gateway)
 		if(!memcmp(rcvdPacket->ethernet->shaddr, Globals::victim.mac->ether_addr_octet,6)){
