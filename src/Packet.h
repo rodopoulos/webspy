@@ -19,12 +19,20 @@ class Packet {
 public:
 	int len;
 	const unsigned char* data;
+	Ethernet* ethernet;
+	IP*		  ip;
+	TCP*	  tcp;
 
 	Packet(const unsigned char* data, int len);
 	virtual ~Packet();
 
+	TCP* getTCP();
+	int getHdrLen();
+	int getPayloadLen();
+	unsigned char* getPayload();
+	bool isTCPSegment();
 	bool isHTTP();
-	const unsigned char* getPayload();
+
 };
 
 #endif /* SRC_PACKET_H_ */

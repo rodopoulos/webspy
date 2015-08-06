@@ -13,7 +13,7 @@ pthread_mutex_t  Renderer::rendererMutex;
 /************************************************************************
  * * * * * * * * CONSTRUCTORS * * * * * * * * * * * * * * * * * * * * * *
  ************************************************************************/
-Renderer::Renderer() : bufferThread(0){
+Renderer::Renderer(){
 	server = mg_create_server(NULL, srvEventHandler);
 	mg_set_option(server, "document_root", "../www");
 	mg_set_option(server, "listening_port", "8080");
@@ -88,5 +88,5 @@ void Renderer::answerRequest(struct mg_connection *conn){
 	rendererBuffer.pop();
 	pthread_mutex_unlock(&rendererMutex);
 
-	printf("%s\n\n", http.data);
+	mg_printf_data(conn, http.data);
 }

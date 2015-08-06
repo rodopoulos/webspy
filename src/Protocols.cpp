@@ -62,6 +62,10 @@ IP::IP(unsigned char* buf){
 	memcpy(&versionAndHl, buf, 20);
 }
 
+int IP::getHdrLen(){
+	return (versionAndHl & 0xf) * 4;;
+}
+
 // --------- TCP HEADER METHODS ------------------------------------
 TCP::TCP(unsigned char* buf){
 	buf += 34;
@@ -73,7 +77,7 @@ int TCP::getHdrLen(){
 }
 
 // --------- HTTP HEADER METHODS ------------------------------------
-HTTP::HTTP(unsigned char* buf){
-
+HTTP::HTTP(unsigned char* buf, int size){
+	memcpy(&data, buf, size);
 }
 
