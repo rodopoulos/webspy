@@ -18,7 +18,7 @@
 class Packet {
 public:
 	int len;
-	const unsigned char* data;
+	unsigned char* data;
 	Ethernet* ethernet;
 	IP*		  ip;
 	TCP*	  tcp;

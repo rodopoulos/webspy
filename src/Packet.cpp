@@ -12,14 +12,17 @@
  ************************************************************************/
 Packet::Packet(const unsigned char* data, int len) {
 	this->len = len;
-	this->data = (const unsigned char*) malloc(len * sizeof(const unsigned char*));
-	memcpy((unsigned char*) this->data, data, len);
+	this->data = new unsigned char[len];
+	memcpy(this->data, data, len);
 
 	ethernet = (Ethernet*) this->data;
 	ip = (IP*) (14 + this->data);
 }
 
 Packet::~Packet() {}
+
+
+
 
 /******************************************************************************
  * * * * * * * * PACKET LAYERS * * * * * * * * * * * * * * * * * * * * * * * **
@@ -38,8 +41,10 @@ TCP* Packet::getTCP(){
 
 unsigned char* Packet::getPayload(){
 	TCP* tcp = (TCP*) (14 + 20 + data);
-	return (unsigned char*)(14 + ip->getHdrLen() + tcp->getHdrLen() + data);
+	return 14 + ip->getHdrLen() + tcp->getHdrLen() + data;
 }
+
+
 
 
 /************************************************************************
@@ -54,14 +59,8 @@ int Packet::getPayloadLen(){
 }
 
 bool Packet::isTCPSegment(){
-	return false;
-}
-
-bool Packet::isHTTP(){
-	IP* ip = (IP*) (14 + data);
 	if(ip->protocol == IPPROTO_TCP){
-		TCP* tcp = (TCP*) (14 + 20 + data);
-		if(tcp->flags == 0x18){
+		if(getTCP()->flags != 0x18){
 			const char* payload = (const char*) this->getPayload();
 			if(strstr(payload, "HTTP") != NULL){
 				return true;
@@ -70,3 +69,17 @@ bool Packet::isHTTP(){
 	}
 	return false;
 }
+
+bool Packet::isHTTP(){
+	if(ip->protocol == IPPROTO_TCP){
+		if(getTCP()->flags == 0x18){
+			const char* payload = (const char*) this->getPayload();
+			if(strstr(payload, "HTTP") != NULL){
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+

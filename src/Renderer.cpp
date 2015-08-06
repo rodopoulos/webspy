@@ -84,9 +84,13 @@ int Renderer::srvEventHandler(struct mg_connection *conn, enum mg_event ev){
 
 void Renderer::answerRequest(struct mg_connection *conn){
 	pthread_mutex_lock(&rendererMutex);
-	HTTP http = rendererBuffer.front();
-	rendererBuffer.pop();
+	do{
+		HTTP http = rendererBuffer.front();
+		rendererBuffer.pop();
+		printf("%s\n", http.data);
+	} while(!rendererBuffer.empty());
 	pthread_mutex_unlock(&rendererMutex);
 
-	mg_printf_data(conn, http.data);
+	//mg_printf_data(conn, http.data);
+
 }
