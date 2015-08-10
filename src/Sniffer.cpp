@@ -220,6 +220,10 @@ void Sniffer::listen(pcap_handler callback, u_char* args){
 /************************************************************************
  * * * * * * * * Getters * * * * * * * * * * * * * * * * * * * * * * **
  ************************************************************************/
+pcap_t* Sniffer::getHandle(){
+	return handle;
+}
+
 void Sniffer::getLANProps(){
 	if(pcap_lookupnet(Globals::iface, &lan, &mask, errBuf)){
 		fprintf(stderr,

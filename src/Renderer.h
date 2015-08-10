@@ -10,13 +10,16 @@
 
 #include <cstdio>
 #include <queue>
+#include <map>
 #include <pthread.h>
 #include "Crafter.h"
 #include "Protocols.h"
+#include "HTTPSession.h"
 #include "mongoose.h"
 
 class Renderer {
 	pthread_t 	bufferThread;
+	std::vector<HTTPSession*> sessions;
 	struct mg_server *server;
 
 	static void* rendererReceiver(void* args);
@@ -29,8 +32,11 @@ public:
 
 	Renderer();
 	virtual ~Renderer();
-	void init();
-	void serverLoop();
+	void 		 init();
+	void 		 serverLoop();
+	void 		 addNewSession(HTTPSession* session);
+	bool		 isNewSession(HTTP* request);
+	HTTPSession* retrieveSession(HTTP* http, int method);
 };
 
 #endif /* RENDERER_H_ */

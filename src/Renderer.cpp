@@ -19,12 +19,34 @@ Renderer::Renderer(){
 	mg_set_option(server, "listening_port", "8080");
 }
 
-Renderer::~Renderer() {
-	// TODO Auto-generated destructor stub
+Renderer::~Renderer() {}
+
+
+
+/******************************************************************************
+ * * * * * * * * * * SESSION METHODS * * * * * * * * * * * * * * * * * * * * **
+ *****************************************************************************/
+bool Renderer::isNewSession(HTTP* request){
+	if(sessions.empty())
+		return true;
+
+	if(request->referer.empty())
+		return true;
+	else
+		return false;
 }
 
+void Renderer::addNewSession(HTTPSession* session){
+	sessions.push_back(session);
+}
 
-
+HTTPSession* Renderer::retrieveSession(HTTP* http, int method){
+	std::vector<HTTPSession*>::iterator it;
+	if(method == HTTP_REQ){
+		for(it = sessions.begin(); it != sessions.end(); it++){}
+	} else {}
+	return nullptr;
+}
 
 
 

@@ -60,6 +60,7 @@ public:
 	const char* getLinkName();
 	void getLANProps();
 	void showLANProps();
+	pcap_t* getHandle();
 };
 
 #endif /* SNIFFER_H_ */

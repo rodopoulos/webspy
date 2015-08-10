@@ -17,6 +17,8 @@ Packet::Packet(const unsigned char* data, int len) {
 
 	ethernet = (Ethernet*) this->data;
 	ip = (IP*) (14 + this->data);
+	if(ip->protocol == IPPROTO_TCP)
+		tcp = (TCP*) (14 + ip->getHdrLen() + this->data);
 }
 
 Packet::~Packet() {}
@@ -71,15 +73,21 @@ bool Packet::isTCPSegment(){
 }
 
 bool Packet::isHTTP(){
-	if(ip->protocol == IPPROTO_TCP){
-		if(getTCP()->flags == 0x18){
-			const char* payload = (const char*) this->getPayload();
-			if(strstr(payload, "HTTP") != NULL){
+	if(ip->protocol == IPPROTO_TCP && getTCP()->flags == 0x18){
+		const char* payload = (const char*) this->getPayload();
+		if(strstr(payload, "HTTP/1.0")||
+		   strstr(payload, "HTTP/1.1")||
+		   strstr(payload, "HTTP/2.0")){
+			if(len > 1514)
 				return true;
-			}
+			if (strstr(payload, "GET") || strstr(payload, "POST"))
+				return true;
 		}
 	}
 	return false;
 }
 
-
+void Packet::printPayload(){
+	printf("\n-------------------- CONTENT --------------------\n");
+	printf("\n%s\n", getPayload());
+}

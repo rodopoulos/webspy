@@ -32,6 +32,7 @@ public:
 	unsigned char* getPayload();
 	bool isTCPSegment();
 	bool isHTTP();
+	void printPayload();
 
 };
 
