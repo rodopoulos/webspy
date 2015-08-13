@@ -9,8 +9,7 @@
 #define SRC_HTTPSESSION_H_
 
 #include <vector>
-#include "Packet.h"
-#include "Protocols.h"
+#include "HTTP.h"
 
 class HTTPSession {
 	std::vector<HTTP*> objects;

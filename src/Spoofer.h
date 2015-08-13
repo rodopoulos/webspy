@@ -1,34 +1,30 @@
 /*
  * Spoofer.h
  *
- *  Created on: Apr 7, 2015
- *      Author: Felipe Rodopoulos
+ *  Created on: 10 de ago de 2015
+ *      Author: rodopoulos
  */
 
-#ifndef SPOOFER_H_
-#define SPOOFER_H_
+#ifndef SRC_SPOOFER_H_
+#define SRC_SPOOFER_H_
 
-#include <libnet.h>
-#include <pcap.h>
-#include <cstdio>
-#include <string>
 #include <pthread.h>
-
+#include <tins/tins.h>
 #include "Globals.h"
-#include "Protocols.h"
 #include "Host.h"
-#include "Crafter.h"
-#include "Sniffer.h"
 
 class Spoofer {
+	static Tins::PacketSender sender;
+	static Tins::EthernetII toGateway, toVictim;
+
 	static void* spoof(void* args);
-	static void spoofBack(u_char* args, const struct pcap_pkthdr* header, const unsigned char* packet);
 
 public:
 	Spoofer();
 	virtual ~Spoofer();
 
 	void init();
+	static bool arpHandle(Tins::PDU& packet);
 };
 
-#endif /* SPOOFER_H_ */
+#endif /* SRC_SPOOFER_H_ */
