@@ -13,6 +13,7 @@ using namespace HTTP;
 PacketSender 		Pipe::sender;
 TCPStreamFollower	Pipe::assembler;
 int			 		Pipe::count = 1;
+Server*				Pipe::server;
 
 Pipe::Pipe() {}
 Pipe::~Pipe() {}
@@ -33,7 +34,7 @@ void* Pipe::connect(void* args){
 	Sniffer sniffer(Globals::iface.name(), MIN_MTU, Sniffer::PROMISC);
 	try{
 		sniffer.set_filter(filter);
-	} catch(std::runtime_error){
+	} catch(std::runtime_error e()){
 		sniffer.set_filter(filter);
 	}
 
@@ -74,47 +75,43 @@ bool Pipe::relay(PDU& packet){
 }
 
 bool Pipe::httpRecover(TCPStream& stream){
-	//std::cout << "CLIENT sent " << stream.client_payload().size() << " bytes." << std::endl;
-	//std::cout << "SERVER sent " << stream.server_payload().size() << " bytes." << std::endl;
-	//std::cout << std::endl;
+	std::cout << &stream.client_payload()[0] << std::endl << std::endl;
+	std::cout << &stream.server_payload()[0] << std::endl << std::endl  << std::endl;
+	std::cout << "****************************************************" << std::endl << std::endl;
+
+	std::size_t size = stream.client_payload().size();
+	unsigned char* buf = new unsigned char[size + 1];
+	buf = reinterpret_cast<unsigned char*>(stream.client_payload().data());
+	buf[size + 1] = '\0';
+
+	Request request(buf, size + 1);
+	std::cout << "\033[1;36m[REQUEST] \033[0;36m"
+			  << request.method << " "
+			  << request.uri << "\033[0m"
+			  << std::endl;
 
 
-	/*if(!stream.client_payload().empty()){
-		std::size_t size = stream.client_payload().size();
-		unsigned char* buf = new unsigned char[size + 1];
-		buf = reinterpret_cast<unsigned char*>(stream.client_payload().data());
-		buf[size + 1] = '\0';
+	std::size_t size = stream.client_payload().size();
+	unsigned char* buf = new unsigned char[size + 1];
+	buf = reinterpret_cast<unsigned char*>(stream.server_payload().data());
+	buf[size + 1] = '\0';
 
-		Request request(buf, size + 1);
-		std::cout << "\033[1;36m[REQUEST] \033[0;36m"
-				  << request.method << " "
-				  << request.uri << "\033[0m"
-				  << std::endl;
-	}
+	Response response(buf, size + 1);
+	std::cout << "\033[1;32m[RESPONSE] \033[0;32m"
+			  << response.code << " "
+			  << response.message << "\033[0m"
+			  << std::endl;
 
-	if(!stream.server_payload().empty()){
-		std::size_t size = stream.client_payload().size();
-		unsigned char* buf = new unsigned char[size + 1];
-		buf = reinterpret_cast<unsigned char*>(stream.server_payload().data());
-		buf[size + 1] = '\0';
-
-		Response response(buf, size + 1);
-		std::cout << "\033[1;32m[RESPONSE] \033[0;32m"
-				  << response.code << " "
-				  << response.message << "\033[0m"
-				  << std::endl;
-
-	}*/
 	return true;
 }
 
 
 bool Pipe::tcpFollower(TCPStream& stream){
-	if(stream.is_finished()){
-		std::cout << "CLIENT" << std::endl << stream.client_payload().data() << std::endl << std::endl;
-		std::cout << "SERVER" << std::endl << stream.server_payload().data() << std::endl << std::endl << std::endl;
-	}
 	return true;
+}
+
+void Pipe::setServer(Server *serverPtr){
+	server = serverPtr;
 }
 
 void Pipe::printPacket(PDU& packet){
