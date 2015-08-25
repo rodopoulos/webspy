@@ -11,16 +11,18 @@
 #include <vector>
 #include <tins/tins.h>
 #include <pthread.h>
+#include <unistd.h>
 #include "Globals.h"
 #include "Host.h"
 
 class Sweeper {
-
 	static std::vector<Host> hosts;
+	static Tins::Sniffer 	 sniffer;
 
-	static void* sendProbes(void* args);
+	static void  sendProbes();
 	static bool  replyHandle(Tins::PDU& reply);
 	static bool  isNewHost(Tins::IPv4Address ip);
+	static void* initSniffer(void* args);
 	static std::string baseIP(std::string);
 
 public:

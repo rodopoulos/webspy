@@ -34,9 +34,18 @@ bool Host::isDefined(){
 	return mac.size() != 0;
 }
 
-void Host::toString(){
-	std::cout << "\033[1;34m[HOST]\033[0m"
-			  << std::setw(11) << ip.to_string()  << " | "
-			  << std::setw(17) << mac.to_string() << " | "
-			  << name << std::endl;
+void Host::toString(int id){
+	if(id){
+		std::cout << std::setw(7) << std::setiosflags(std::ios::left) << id
+				  << std::setw(11) << ip.to_string()  << "   "
+				  << std::setw(17) << mac.to_string() << "   "
+				  << name << std::endl;
+	}
+	else{
+		std::cout << "\033[1;34m[HOST]\033[0m"
+				  << std::setw(11) << ip.to_string()  << " | "
+				  << std::setw(17) << mac.to_string() << " | "
+				  << name << std::endl;
+	}
 }
+

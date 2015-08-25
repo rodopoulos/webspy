@@ -16,39 +16,39 @@ Sweeper::~Sweeper() {}
 
 
 void Sweeper::sweep(){
-	pthread_t proberThread;
-	if(pthread_create(&proberThread, nullptr, sendProbes, nullptr)){
-		std::cerr << "\033[1;31m [Error]"
-					 " Sweeper::sweep ->"
-					 "\033[0m can't create thread for probing" << std::endl;
-		exit(EXIT_FAILURE);
-	}
-
 	std::string filter = "arp";
 	Sniffer sniffer(Globals::iface.name(), Sniffer::PROMISC, filter);
 	sniffer.set_timeout(500);
-	sniffer.sniff_loop(replyHandle);
+
+	pthread_t snifferThread;
+	pthread_create(&snifferThread, nullptr, initSniffer, &sniffer);
+
+	sendProbes();
+	sniffer.stop_sniff();
 }
 
 Host& Sweeper::selectHost(){
 	int opt, cont = 1;
+	if(hosts.empty()){
+		std::cout << "\033[1;33m[WARNING]\033[0m"
+				  << " No hosts found. Exiting..." << std::endl;
+		exit(EXIT_SUCCESS);
+	}
 	std::vector<Host>::iterator it;
-	std::cout << " [#] "    << std::setw(5)
+	std::cout << "\033[0;1m"<< std::endl
+			  << "[ID]"     << std::setw(7)
 			  << "[IP]"     << std::setw(15)
-			  << "[MAC]"    << std::setw(17)
-			  << "[VENDOR]"
-			  << std::endl;
+			  << "[MAC]"    << std::setw(23)
+			  << "[VENDOR]" << "\033[0m" << std::endl;
+
 	for(it = hosts.begin(); it != hosts.end(); it++){
-		std::cout << cont << std::setw(5)
-				  << (*it).ip.to_string()  << std::setw(15)
-				  << (*it).mac.to_string() << std::setw(17)
-				  << (*it).name;
+		(*it).toString(cont);
 		cont++;
 	}
 	std::cout << std::endl << "Select ID: ";
 	std::cin >> opt;
 
-	return hosts[opt];
+	return hosts[opt - 1];
 }
 
 
@@ -59,7 +59,7 @@ Host& Sweeper::selectHost(){
 
 
 
-void* Sweeper::sendProbes(void* args){
+void Sweeper::sendProbes(){
 	IPv4Range range = IPv4Range::from_mask(
 		baseIP(Globals::iface.info().ip_addr.to_string()),
 		Globals::iface.info().netmask
@@ -69,13 +69,17 @@ void* Sweeper::sendProbes(void* args){
 	HWAddress<6> shaddr = Globals::attacker.mac;
 
 	PacketSender sender(Globals::iface);
+	int count = 0;
 	for (const auto &target : range){
 		if(target != Globals::attacker.ip && target != Globals::gateway.ip){
 			EthernetII request = ARP::make_arp_request(target, spaddr, shaddr);
 			sender.send(request);
+			count++;
 		}
 	}
-	return nullptr;
+	std::cout << "\033[0;1mARP Sweep: \033[0m" << count << " requests sended" << std::endl;
+	sleep(5);
+
 }
 
 bool Sweeper::replyHandle(PDU& reply){
@@ -104,4 +108,10 @@ std::string Sweeper::baseIP(std::string ip){
 	base.append(".0");
 
 	return base;
+}
+
+void* Sweeper::initSniffer(void* args){
+	Sniffer* sniffer = (Sniffer*) args;
+	sniffer->sniff_loop(replyHandle);
+	return nullptr;
 }

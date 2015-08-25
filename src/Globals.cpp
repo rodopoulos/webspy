@@ -57,11 +57,17 @@ void Globals::init(){
 	}
 
 	PacketSender resolver(iface);
-	HWAddress<6> gatewayMac = Utils::resolve_hwaddr(gatewayIp, resolver);
-
+	try{
+		HWAddress<6> gatewayMac = Utils::resolve_hwaddr(gatewayIp, resolver);
+		gateway.setMAC(gatewayMac);
+	} catch(std::runtime_error){
+		std::cerr << "\033[1;31m[Error]"
+					 " Globals::init ->"
+					 "\033[0m gateway not recheable (run as sudo)" << std::endl;
+		exit(EXIT_FAILURE);
+	}
 	gateway.setName("Gateway");
 	gateway.setIP(gatewayIp);
-	gateway.setMAC(gatewayMac);
 	gateway.toString();
 
 }

@@ -25,7 +25,8 @@ public:
 	void setIP(Tins::IPv4Address ip);
 	void setMAC(Tins::HWAddress<6> mac);
 	bool isDefined();
-	void toString();
+	void toString(int id = 0);
+
 };
 
 #endif /* SRC_HOST_H_ */
