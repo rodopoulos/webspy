@@ -19,26 +19,23 @@
 namespace HTTP {
 
 class Server {
-	static std::list<Session> sessions;
-	static pthread_mutex_t sessionMutex;
+	static Response* currentPage;
+	static std::list<Response*> content;
+	static pthread_mutex_t contentMutex;
 	struct mg_server* server;
-	int port;
 
 	static int   handle(struct mg_connection *conn, enum mg_event ev);
 	static int	 serveRequest(struct mg_connection *conn);
-	static int   getSessionID(struct mg_connection *conn);
-	static void* sessionChecker(void* args);
-	static void  triggerBrowser(long int id);
+	static void*  initBrowser(void* args);
+	static HTTP::Response* retrieveContent(std::string uri);
 
 public:
 	Server();
 	virtual ~Server();
 
 	void loop();
-
-	static void		addSession(Session session);
-	static void 	addContentToSession(std::string host, Response content);
-	static bool	 	hasSession(std::string host);
+	void addContent(HTTP::Response* newContent);
+	static void assignPage(Response* response);
 };
 
 } /* namespace HTTP */

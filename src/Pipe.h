@@ -12,16 +12,11 @@
 #include <tins/tins.h>
 #include "Globals.h"
 #include "http/HTTP.h"
+#include "http/Server.h"
 
 class Pipe {
 #define MIN_MTU			1514
-
-// Packet analyser commands
-#define JUST_RELAY		0
-#define STRIP			1
-#define	RESET_COOKIE	2
-#define RESET_CACHE		3
-#define SSL_REQ			4
+	static HTTP::Server *server;
 
 	static void* connect(void*);
 	static bool tcpFollower(Tins::TCPStream& stream);
@@ -38,6 +33,7 @@ public:
 	virtual ~Pipe();
 
 	void init();
+	static void setServer(HTTP::Server *server);
 	static bool relay(Tins::PDU& packet);
 };
 

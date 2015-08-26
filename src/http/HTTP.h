@@ -37,7 +37,10 @@ public:
 	std::size_t dataSize();
 	void		setServer(Tins::IPv4Address addr, uint16_t port);
 	void		setURI(std::string uri);
+	void		addData(unsigned char* data, int len);
 	virtual const char* flushData() = 0;
+	virtual void 		toString() = 0;
+
 };
 
 class Request : public Message{
@@ -45,6 +48,9 @@ public:
 	Request(unsigned char* payload, std::size_t size);
 	virtual ~Request();
 	const char* flushData();
+	void toString();
+
+	static void parseMultipleRequests(std::list<Request*>* content, unsigned char* buf, int len);
 
 	std::string uri;
 	std::string method;
@@ -56,6 +62,9 @@ public:
 	Response(unsigned char* payload, std::size_t size);
 	virtual ~Response();
 	const char* flushData();
+	void toString();
+
+	static void parseMultipleResponses(std::list<Response*>* content, unsigned char* buf, int len);
 
 	std::string code;
 	std::string message;

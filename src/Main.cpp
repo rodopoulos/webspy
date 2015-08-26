@@ -16,6 +16,7 @@
 #include "Pipe.h"
 
 using namespace std;
+using namespace HTTP;
 
 static void showUsage(int exitCode){
 	fprintf(stderr, "Usage: webspy [-v] [-l] [-i iface] [-V victim]\n");
@@ -75,9 +76,12 @@ int main(int argc, char* argv[]){
 	spoofer.init();
 
 	Pipe pipe;
+	Server server;
+
+	pipe.setServer(&server);
 	pipe.init();
 
-	while(1==1){}
+	server.loop();
 
 	return 0;
 }

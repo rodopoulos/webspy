@@ -84,6 +84,55 @@ void Message::setURI(std::string uri){
 	this->uri = uri;
 }
 
+void Message::addData(unsigned char* data, int len){
+	body = new char[len];
+	memcpy(body, data, len);
+}
+
+void Request::parseMultipleRequests(std::list<Request*>* content, unsigned char* buf, int len){
+	char* first = (char*) buf;
+	char* last = strstr(first, "\r\n\r\n") + 4;
+	do{
+		Request* request = new Request((unsigned char*) first, last - first);
+		if(request->method == "POST"){
+			if(request->hasHeader("Content-Length")){
+				int size = std::stoi(request->getHeader("Content-Length"));
+				request->addData((unsigned char*) last, size);
+				last += size;
+			}
+		}
+		content->push_back(request);
+		first = last;
+		last = strstr(first, "\r\n\r\n");
+		if(!last)
+			last = strchr(first, '\0');
+		else
+			last += 4;
+	} while(*last != '\0');
+}
+
+void Response::parseMultipleResponses(std::list<Response*>* content, unsigned char* buf, int len){
+	char* first = (char*) buf;
+	char* last = strstr(first, "\r\n\r\n") + 4;
+	do{
+		Response* response = new Response((unsigned char*) first, last - first);
+		if(response->hasHeader("Content-Length")){
+			int size = std::stoi(response->getHeader("Content-Length"));
+			response->addData((unsigned char*) last, size);
+			last += size;
+		}
+		std::cout << "RESPOSTA:" << std::endl << response->body << std::endl;
+		content->push_back(response);
+		std::cout << std::endl << "---------- FIM ------------" << std::endl;
+		first = last;
+		last = strstr(first, "\r\n\r\n");
+		if(!last)
+			last = strchr(first, '\0');
+		else
+			last += 4;
+	} while(*last != '\0');
+}
+
 /******************************************************************************
  * * * * * * * * * * * * * * HTTP Request * * * * * * * * * * * * * * * * * * *
  *****************************************************************************/
@@ -108,6 +157,13 @@ const char* Request::flushData(){
 	const std::string& tmp = output.str();
 	const char* result = tmp.c_str();
 	return result;
+}
+
+void Request::toString(){
+	std::cout << "\033[1;36m[REQUEST] \033[0;36m"
+			  << method << " "
+			  << uri << "\033[0m"
+			  << std::endl;
 }
 
 /******************************************************************************
@@ -139,5 +195,11 @@ const char* Response::flushData(){
 	return result;
 }
 
+void Response::toString(){
+	std::cout << "\033[1;32m[RESPONSE] \033[0;32m"
+			  << code << " "
+			  << message << " "
+			  << uri << "\033[0m" << std::endl;
+}
 
 } /* namespace HTTP */
