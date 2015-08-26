@@ -73,10 +73,10 @@ bool Pipe::relay(PDU& packet){
 }
 
 bool Pipe::httpRecover(TCPStream& stream){
-	//std::cout << &stream.client_payload()[0] << std::endl << std::endl;
+	std::cout << &stream.client_payload()[0] << std::endl << std::endl;
 	//std::cout << &stream.server_payload()[0] << std::endl;
-	//fflush(stdout);
-	//std::cout << "--------------- END STREAM -------------------------------" << std::endl << std::endl;
+	fflush(stdout);
+	std::cout << "--------------- END STREAM -------------------------------" << std::endl << std::endl;
 
 	std::list<Request*> requests;
 	std::size_t size = stream.client_payload().size();
@@ -98,6 +98,7 @@ bool Pipe::httpRecover(TCPStream& stream){
 			requests.pop_front();
 			responses.pop_front();
 			response->uri = request->uri;
+			delete request;
 			server->addContent(response);
 		}
 	} else{

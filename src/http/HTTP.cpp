@@ -92,6 +92,7 @@ void Message::addData(unsigned char* data, int len){
 void Request::parseMultipleRequests(std::list<Request*>* content, unsigned char* buf, int len){
 	char* first = (char*) buf;
 	char* last = strstr(first, "\r\n\r\n") + 4;
+	std::cout << "Tamanho: " << (last - first) << std::endl;
 	do{
 		Request* request = new Request((unsigned char*) first, last - first);
 		if(request->method == "POST"){
@@ -101,6 +102,7 @@ void Request::parseMultipleRequests(std::list<Request*>* content, unsigned char*
 				last += size;
 			}
 		}
+		request->toString();
 		content->push_back(request);
 		first = last;
 		last = strstr(first, "\r\n\r\n");

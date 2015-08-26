@@ -90,6 +90,7 @@ int Server::serveRequest(struct mg_connection *conn){
 	}
 	mg_printf_data(conn, object->body, sizeof(object->body));
 	pthread_mutex_unlock(&contentMutex);
+	delete object;
 	return MG_TRUE;
 }
 
